@@ -174,7 +174,7 @@ class INEX_Form_Customer extends INEX_Form
         $nocphone->addValidator( 'stringLength', false, array( 0, 255 ) )
             ->setRequired( false )
             ->setLabel( 'Phone' )
-            ->setAttrib( 'placeholder', '+353 1 123 4567' )
+            ->setAttrib( 'placeholder', '+44 20 7946 1234' )
             ->setAttrib( 'class', 'span4' )
             ->addFilter( 'StringTrim' )
             ->addFilter( new OSS_Filter_StripSlashes() );
@@ -183,7 +183,7 @@ class INEX_Form_Customer extends INEX_Form
         $noc24hphone = $this->createElement( 'text', 'noc24hphone' );
         $noc24hphone->addValidator( 'stringLength', false, array( 0, 255 ) )
             ->setRequired( false )
-            ->setAttrib( 'placeholder', '+353 86 876 5432' )
+            ->setAttrib( 'placeholder', '+44 20 7946 1234' )
             ->setAttrib( 'class', 'span4' )
             ->setLabel( '24h Phone' )
             ->addFilter( 'StringTrim' )
@@ -194,7 +194,7 @@ class INEX_Form_Customer extends INEX_Form
         $nocfax->addValidator( 'stringLength', false, array( 0, 40 ) )
             ->setRequired( false )
             ->setLabel( 'Fax' )
-            ->setAttrib( 'placeholder', '+353 1 765 4321' )
+            ->setAttrib( 'placeholder', '+44 20 7946 1234' )
             ->setAttrib( 'class', 'span4' )
             ->addFilter( 'StringTrim' )
             ->addFilter( new OSS_Filter_StripSlashes() );
@@ -276,7 +276,7 @@ class INEX_Form_Customer extends INEX_Form
         $billingCountry = $this->createElement( 'select', 'billingCountry' );
         $billingCountry->setMultiOptions( OSS_Countries::getCountriesArray() )
             ->setRegisterInArrayValidator( true )
-            ->setValue( 'IE' )
+            ->setValue( 'GB' )
             ->setLabel( 'Country' )
             ->setRequired( false )
             ->setAttrib( 'class', 'chzn-select span6' );

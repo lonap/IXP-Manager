@@ -73,7 +73,7 @@ class INEX_Form_Customer_BillingDetails extends INEX_Form
         $billingCountry = $this->createElement( 'select', 'billingCountry' );
         $billingCountry->setMultiOptions( [ '' => '' ] + OSS_Countries::getCountriesArray() )
             ->setRegisterInArrayValidator( true )
-            ->setValue( 'IE' )
+            ->setValue( 'GB' )
             ->setLabel( 'Country' )
             ->setRequired( false )
             ->setAttrib( 'style', 'width: 150px;' )
