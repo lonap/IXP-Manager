@@ -1,0 +1,130 @@
+{tmplinclude file="header.phtml"}
+
+{if $user->getPrivs() eq 3}
+    <ul class="breadcrumb">
+        <li>
+            <a href="{genUrl}">Home</a> <span class="divider">/</span>
+        </li>
+        <li>
+            Documentation <span class="divider">/</span>
+        </li>
+        <li class="active">
+            Membership Fees and Charges
+        </li>
+    </ul>
+    
+    <div>
+{else}
+    <div class="page-content">
+        <div class="page-header">
+            <h1>Membership Fees and Charges</h1>
+        </div>
+{/if}
+
+<p>
+LONAP is a member supported organisation and operates on a not-for-profit basis.
+Revenue for the organisation comes from two primary sources, membership fees and
+port charges.
+</p>
+
+<h3>2012 Fees and Charges</h3>
+
+<br /><br />
+<h4>Membership Fees</h4>
+
+<br /><br />
+
+<div class="row-fluid">
+    <div class="span9">
+        <table class="table">
+        <tr>
+            <th width="65%" >Description</th>
+            <th>Charge</th>
+        </tr>
+
+        <tr>
+            <td>Full Membership</td>
+            <td>&pound;500 per quarter (or &pound;2,000 per year)</td>
+        </tr>
+
+        <tr>
+            <td>Joining Fee</td>
+            <td>No charge</td>
+        </tr>
+        </table>
+    </div>
+</div>
+
+
+<br /><br />
+<h4>Port Charges</h4>
+<br /><br />
+
+<div class="row-fluid">
+    <div class="span9">
+        <table class="table">
+            <tr>
+                <th width="20%">Description</th>
+                <th>First Port</th>
+                <th>Second Port</th>
+                <th>Subsequent Port&nbsp;&nbsp;&nbsp;&nbsp;</th>
+                <th>Term</th>
+            </tr>
+
+            <tr>
+                <td>1Gbit/s port</td>
+                <td>included in membership</td>
+                <td>included in membership</td>
+                <td>&pound;2,000 (per pair)</td>
+                <td>per annum</td>
+            </tr>
+
+            <tr>
+                <td>10Gbit/s port</td>
+                <td>&pound;2,500 setup + &pound;2,500 per year</td>
+                <td>&pound;2,500 setup + &pound;2,500 per year</td>
+                <td>&pound;2,500 setup + &pound;2,500 per year</td>
+                <td>per annum</td>
+            </tr>
+        </table>
+    </div>
+</div>
+
+<br /><br />
+<h4>Miscellaneous Charges</h4>
+<br /><br />
+
+<div class="row-fluid">
+    <div class="span9">
+        <table class="table">
+            <tr>
+                <th width="75%" >Description</th>
+                <th>Charge</th>
+            </tr>
+
+            <tr>
+                <td>Private VLAN between two members</td>
+                <td>Currently no additional fee</td>
+            </tr>
+
+        </table>
+    </div>
+</div>
+
+<br /><br />
+<h4>Notes</h4>
+<br /><br />
+<ul>
+    <li> Membership includes 2 x 1Gb/s ports </li>
+    <li> Port fees do not include cable installation charges. Members pay the install and cable fees to the relevant co-location facility. </li>
+    <li> There is no port connection charge, except for ZX gigabit and ten gigabit links </li>
+</ul>
+
+
+
+</div>
+
+
+
+
+{tmplinclude file="footer.phtml"}
