@@ -115,7 +115,7 @@ class INEX_Form_User extends INEX_Form
         $mobile->addValidator( 'stringLength', false, array( 0, 30 ) )
                ->setRequired( false )
                ->setLabel( 'Mobile' )
-               ->setAttrib( 'placeholder', '+353 86 123 4567' )
+               ->setAttrib( 'placeholder', '+44 20 7946 1234' )
                ->addFilter( 'StringTrim' )
                ->addFilter( new OSS_Filter_StripSlashes() );
     
