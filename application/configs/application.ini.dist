@@ -194,6 +194,7 @@ resources.doctrine2.connection.options.dbname   = 'ixp'
 resources.doctrine2.connection.options.user     = 'ixp'
 resources.doctrine2.connection.options.password = 'password'
 resources.doctrine2.connection.options.host     = '127.0.0.1'
+resources.doctrine2.connection.options.charset  = 'utf8'
 
 
 
@@ -430,7 +431,7 @@ smokeping.oconf.syslogfacility = "local0"
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
-;; Route Collector Details
+;; Route Collector / Server Details
 ;;
 ;; See: https://github.com/inex/IXP-Manager/wiki/Route-Collector
 ;;
@@ -442,6 +443,7 @@ smokeping.oconf.syslogfacility = "local0"
 ; Used by nagios-cli.gen-members-conf action to monitor route collector BGP sessions
 ;router.collector.conf.snmppasswd = 'xxxx'
 
+;irrdb.bgpq.path = '/path/to/bgpq3'
 
 ; sflow parameters (peer to peer graphs)
 sflow.enabled = true
