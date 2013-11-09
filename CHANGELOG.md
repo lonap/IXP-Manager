@@ -5,6 +5,52 @@ Please see the following page for upgrade instructions:
 
 > https://github.com/inex/IXP-Manager/wiki/Installation-09-Upgrading-IXP-Manager
 
+# v3.4.10 (20130911)
+
+Continue adding Nagios improvements - this time for monitoring members.
+
+One of the templates (`views/nagios-cli/conf/members-service-rcmon.cfg`) monitors 
+member BGP sessions to the route collector. For this, an SNMP v2 password is required
+and as such the following has been added to `application.ini.dist`:
+
+    ; Used by nagios-cli.gen-members-conf action to monitor route collector BGP sessions
+    ;router.collector.conf.snmppasswd = 'xxxx'
+
+If it is not set, that service will not be added to Nagios by default. Remember - skin
+the Nagios configuration directory rather than editing those files directly.
+
+- [BF] Ignore hosts that are not connected (870f6c9 - Barry O'Donovan - 2013-09-11)
+- [IM] Reimplement busy hosts flag for Nagios (78e4e6a - Barry O'Donovan - 2013-09-11)
+- [IM] Reimplement busy hosts flag for Nagios (8a225b1 - Barry O'Donovan - 2013-09-11)
+- [BF] Only add customer hostgroup if there are hosts (76b7b3e - Barry O'Donovan - 2013-09-11)
+- [BF] Check correct protocol enabled and limit hosts to those that can be pinged (80af008 - Barry O'Donovan - 2013-09-11)
+- [BF] Typo on default route masklen (5e6da1d - Barry O'Donovan - 2013-09-11)
+- [IM] Nagios member monitoring (3c7cd7b - Barry O'Donovan - 2013-09-11)
+- [IM] Route collector Nagios monitoring service (dd6191a - Barry O'Donovan - 2013-09-11)
+- [IM] Utility function to provide an array of all VLAN interfaces on a given IXP (5d7d210 - Barry O'Donovan - 2013-09-11)
+
+
+# v3.4.9 (20130909)
+
+Improve and refactor Nagios configuration generation for IXP switches.
+
+See: https://github.com/inex/IXP-Manager/wiki/Nagios
+
+Schema update required:
+
+    ALTER TABLE vendor 
+        ADD shortname VARCHAR(255) DEFAULT NULL, 
+        ADD nagios_name VARCHAR(255) DEFAULT NULL;
+
+
+- [IM] Update Nagios switch config generator with changes to vendor table (3768516 - Barry O'Donovan - 2013-09-06)
+- [DB] Update fixtures to reflect changes to vendor table (4468595 - Barry O'Donovan - 2013-09-06)
+- [DB] Add two new columns to vendor table (a12bb02 - Barry O'Donovan - 2013-09-06)
+- [IM] Nagios config more dynamic (051aa57 - Barry O'Donovan - 2013-09-06)
+- [HK] s/inex/ixp (f84d075 - Barry O'Donovan - 2013-09-06)
+- [HK] Migrate Nagios config to dedicated controller (47e3164 - Barry O'Donovan - 2013-09-06)
+
+
 # v3.4.8 (20130905)
 
 
