@@ -35,6 +35,8 @@ class RouterCliController extends IXP_Controller_CliAction
 {
     /**
      * Action to generate a route collector configuration
+     *
+     * @see https://github.com/inex/IXP-Manager/wiki/Route-Collector
      */
     public function genCollectorConfAction()
     {
@@ -77,6 +79,8 @@ class RouterCliController extends IXP_Controller_CliAction
 
     /**
      * Action to generate an AS112 router configuration
+     *
+     * @see https://github.com/inex/IXP-Manager/wiki/AS112
      */
     public function genAs112ConfAction()
     {
@@ -108,6 +112,39 @@ class RouterCliController extends IXP_Controller_CliAction
             echo $this->view->render( "router-cli/as112/{$target}/index.cfg" );
     }
 
+    /**
+     * Action to generate a TACACS+ configuration
+     *
+     * @see https://github.com/inex/IXP-Manager/wiki/TACACS
+     */
+    public function genTacacsConfAction()
+    {
+        $this->view->users = $this->getD2R( '\\Entities\\User' )->arrangeByType();
+    
+        $dstfile                    = $this->cliResolveParam( 'dstfile',        false );
+        $target                     = $this->cliResolveParam( 'target',         true, 'tacplus' );
+        $this->view->secret         = $this->cliResolveParam( 'secret',         true, 'soopersecret' );
+        $this->view->accountingfile = $this->cliResolveParam( 'accountingfile', true, '/var/log/tac_plus/tac_plus.log' );
+        
+        if( $dstfile )
+        {
+            if( !$this->writeConfig( $dstfile, $this->view->render( "router-cli/tacacs/{$target}/index.cfg" ) ) )
+                fwrite( STDERR, "Error: could not save configuration data\n" );
+        }
+        else
+            echo $this->view->render( "router-cli/tacacs/{$target}/index.cfg" );
+    }
+    
+    /**
+     * This is a summy function for gen-tacacs-conf.
+     *
+     * @see https://github.com/inex/IXP-Manager/wiki/RADIUS
+     */
+    public function genRadiusConfAction()
+    {
+        $this->forward( 'gen-tacacs-conf' );
+    }
+    
     /**
      * The collector configuration expects some data to be available. This function
      * gathers and checks that data.
