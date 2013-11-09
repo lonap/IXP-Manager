@@ -14,7 +14,10 @@ var/log/*
 var/meetings/*
 var/session/*
 var/templates_c/*
+var/tmp/*
+var/spool/*
 *~
+public/favicon.ico
 public/maintenance.php
 public/images/.directory
 public/images/joomla-admin/.directory
