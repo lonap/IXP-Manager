@@ -5,6 +5,37 @@ Please see the following page for upgrade instructions:
 
 > https://github.com/inex/IXP-Manager/wiki/Installation-09-Upgrading-IXP-Manager
 
+# v3.4.3 (20130809)
+
+Add Smokeping support. 
+
+See https://github.com/inex/IXP-Manager/wiki/Smokeping
+
+A schema update is required:
+
+    ALTER TABLE switchport ADD lagIfIndex INT DEFAULT NULL;
+    ALTER TABLE ixp ADD smokeping VARCHAR(255) DEFAULT NULL;
+
+
+Ensure you perform a `git submodule update`.
+
+
+- [IM] Oppss... forgot to serve Smokeping via IXP Manager (63d3187 - Barry O'Donovan - 2013-08-09)
+- [IM] Tweaks from production (ad5e374 - Barry O'Donovan - 2013-08-09)
+- [IM] Only show Smokeping link if there are graphs (f034406 - Barry O'Donovan - 2013-08-09)
+- [BF] Misnamed variable (9e3c8c6 - Barry O'Donovan - 2013-08-09)
+- [BF] Ensure pinging is enabled for at least one protocol (4474ecf - Barry O'Donovan - 2013-08-09)
+- [NF] Add verbosity to daily traffic stats (0654172 - Barry O'Donovan - 2013-08-07)
+- [NF] Make Smokeping graphs available within IXP Manager (e13aabb - Barry O'Donovan - 2013-08-07)
+- [DB] Add new field to switchport to identify LAG ports (beba464 - Barry O'Donovan - 2013-08-07)
+- [DB] Add URL for Smokeping to the database (per IXP) (e0c5a29 - Barry O'Donovan - 2013-08-06)
+- [IM] Ensure the interface is connected and trafficing - and that we are allowed send pings (98746aa - Barry O'Donovan - 2013-08-06)
+- [BF] Reseller must be set (1ddaddc - Barry O'Donovan - 2013-08-06)
+- [NF] Smokeping configuration generator (first pass) (1b8fa05 - Barry O'Donovan - 2013-08-03)
+- [IM] Updates as part of updating the MRTG documentation (dee1773 - Barry O'Donovan - 2013-08-03)
+- [IM] Updates as part of updating the MRTG documentation (b20dc3b - Barry O'Donovan - 2013-08-03)
+
+
 # v3.4.2 (20130803)
 
 This version brings an integrated MRTG configuration generator to replace the Perl version we have been using. See the following link for documentation:

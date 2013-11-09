@@ -89,6 +89,7 @@
       <field name="mrtg_path" type="string" size="255" uuid="1328ffc2-7a48-4aea-9e9c-3e1e9e50489f"/>
       <field name="mrtg_p2p_path" type="string" size="255" uuid="f3a641a9-5f10-42ab-8a7c-97da577dad11"/>
       <field name="aggregate_graph_name" type="string" size="255" uuid="6880fa9c-3176-45bb-9775-0bf0a5be549a"/>
+      <field name="smokeping" type="string" size="255" uuid="20548855-3a72-4b18-bb6e-5ac03fa6aff8"/>
       <orm-attributes>
         <attribute name="table">ixp</attribute>
         <attribute name="tableName">ixp</attribute>
@@ -293,6 +294,7 @@
       <field name="ifOperStatus" type="integer" uuid="eff27ac4-b0e5-4001-a4b1-85253f7f141a"/>
       <field name="ifLastChange" type="integer" uuid="9d032cd9-6905-4df5-8422-ec5e72e4620f"/>
       <field name="lastSnmpPoll" type="datetime" uuid="142ea587-8758-466b-9612-a8be6e4220f2"/>
+      <field name="lagIfIndex" type="integer" uuid="bea9ef74-edd5-4a94-a776-ce90caf78ca4"/>
       <orm-attributes>
         <attribute name="repository-class">Repositories\SwitchPort</attribute>
         <attribute name="table">switchport</attribute>
