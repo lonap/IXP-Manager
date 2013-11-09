@@ -4,6 +4,70 @@ Please see the following page for upgrade instructions:
 
 > https://github.com/inex/IXP-Manager/wiki/Installation-09-Upgrading-IXP-Manager
 
+
+# v3.6.0 (20131018)
+
+Add API V1 with proof of concept API functionality for mailing list management. 
+
+See: https://github.com/inex/IXP-Manager/wiki/API-V1
+See: https://github.com/inex/IXP-Manager/wiki/Mailing-List-Management#api-v1-interface
+
+
+Schema change required:
+
+    CREATE TABLE api_keys (
+        id BIGINT AUTO_INCREMENT NOT NULL, 
+        user_id INT NOT NULL, 
+        apiKey VARCHAR(255) NOT NULL, 
+        expires DATETIME DEFAULT NULL, 
+        allowedIPs VARCHAR(65500) DEFAULT NULL, 
+        created DATETIME NOT NULL, 
+        lastseenAt DATETIME DEFAULT NULL, 
+        lastseenFrom VARCHAR(255) DEFAULT NULL, 
+    
+        UNIQUE INDEX UNIQ_87A61477800A1141 (apiKey), 
+        INDEX IDX_87A61477A76ED395 (user_id), 
+        PRIMARY KEY(id)
+    ) 
+        DEFAULT CHARACTER SET utf8 
+        COLLATE utf8_unicode_ci 
+        ENGINE = InnoDB;
+    
+    ALTER TABLE api_keys 
+        ADD CONSTRAINT FK_87A61477A76ED395 
+        FOREIGN KEY (user_id) 
+        REFERENCES user (id);
+
+
+Templates changed / added:
+
+    application/views/api-key/list-row-menu.phtml
+    application/views/cli/mailing-list-sync-script.sh => application/views/mailing-list-cli/mailing-list-sync-script.sh
+    application/views/frontend/view.phtml
+    application/views/header.phtml
+    application/views/mailing-list-cli/mailing-list-sync-script-apiv1.sh
+    application/views/mailing-list-cli/mailing-list-sync-script.sh
+    application/views/profile/index.phtml
+
+
+
+- [I+] Keep Curl quiet (4235ead - Barry O'Donovan - 2013-10-18)
+- [BF] Fix tmp path (857e1db - Barry O'Donovan - 2013-10-18)
+- [BF] Fix verbosity (c76482d - Barry O'Donovan - 2013-10-18)
+- [I+] Update references to mailing list CLI actions (e64ea94 - Barry O'Donovan - 2013-10-18)
+- [I+] Update references to mailing list CLI actions (98f76d0 - Barry O'Donovan - 2013-10-18)
+- [BF] Update foreign ref to OSS-Framework for reset password fix (8cf5acb - Barry O'Donovan - 2013-10-18)
+- [BF] Update foreign ref to OSS-Framework for reset password fix (7103bd0 - Barry O'Donovan - 2013-10-18)
+- [IM] Delete a user's API keys when deleting the user (408b228 - Barry O'Donovan - 2013-10-18)
+- [N+] Complete API V1 mailing list management functions. (f33f765 - Barry O'Donovan - 2013-10-18)
+- [IM] Use the correct password hashing (59ae043 - Barry O'Donovan - 2013-10-18)
+- [NF] Mailing List management via APIv1 (WIP) (851d823 - Barry O'Donovan - 2013-10-16)
+- [N+] POC of a sample API call (220f049 - Barry O'Donovan - 2013-10-16)
+- [N+] API key management complete (414b1ec - Barry O'Donovan - 2013-10-15)
+- [NF] API (v1) - work in progress (777a64b - Barry O'Donovan - 2013-10-15)
+- [DB] Add schema for API keys (38d681e - Barry O'Donovan - 2013-10-15)
+
+
 # v3.5.4 (20131012)
 
 Migrate to new sflow backend for P2P graphs - see #82.
