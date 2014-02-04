@@ -12,6 +12,33 @@
             
             {$element->custid}
             {$element->trunk}
+            {if isset( $type ) && $type }
+                <div class="control-group">
+                    <label class="control-label">Type</label>
+                    <div class="controls">
+                        <span class="label {if $type == 1}label-success{else if $type == 6}label-inverse{/if}">{$ptypes[$type]|strtoupper}</span>
+                        {if count( $physInts )}
+                            {foreach $physInts as $int}
+                                    {if $type == 1 && $int->getFanoutPhysicalInterface() }
+                                        <span style="margin-left: 15px;">
+                                            <a href="{genUrl controller=$controller action=$action id=$int->getFanoutPhysicalInterface()->getVirtualInterface()->getId()}">
+                                                See {$ptypes[6]|strtolower} port
+                                            </a>
+                                        </span>
+                                    {/if}
+                                    {if $type == 6 && $int->getPeeringPhysicalInterface() }
+                                        <span style="margin-left: 15px;">
+                                            <a href="{genUrl controller=$controller action=$action id=$int->getPeeringPhysicalInterface()->getVirtualInterface()->getId()}">
+                                                See {$ptypes[1]|strtolower} port
+                                            </a>
+                                        </span>
+                                    {/if}
+                            {/foreach}
+                     
+                        {/if}
+                    </div>
+                </div>
+            {/if}
             
         </fieldset>
         
@@ -43,9 +70,9 @@
 <div class="form-actions">
     <input type="submit" name="commit" id="commit" value="{if $isEdit}Save Changes{else}Add{/if}" class="btn btn-primary">
     {if isset( $cust )}
-        <a class="btn" href="{genUrl controller='customer' action='view' id=$cust->getId()}">Return</a>
+        <a class="btn btn-success" href="{genUrl controller='customer' action='overview' tab='ports' id=$cust->getId()}">Return to Customer Overview</a>
     {else}
-        <a class="btn btn-success" href="{genUrl controller='vlan-interface' action='quick-add'}">Wizard Add</a>
+        <a class="btn btn-success" href="{genUrl controller='virtual-interface' action='add-wizard'}">Wizard Add</a>
         <a class="btn" href="{genUrl controller="virtual-interface" action="list"}">Return</a>
     {/if}
 

@@ -12,272 +12,259 @@ class Customer
     const TYPE_FULL       = 1;
     const TYPE_ASSOCIATE  = 2;
     const TYPE_INTERNAL   = 3;
+    const TYPE_IXP        = 3;
     const TYPE_PROBONO    = 4;
-    
-    public static $CUST_TYPES_TEXT = array(
+
+    public static $CUST_TYPES_TEXT = [
         self::TYPE_FULL      => 'Full',
         self::TYPE_ASSOCIATE => 'Associate',
         self::TYPE_INTERNAL  => 'Internal',
         self::TYPE_PROBONO   => 'Pro-bono'
-    );
-    
-    
+    ];
+
+
     const STATUS_NORMAL       = 1;
     const STATUS_NOTCONNECTED = 2;
     const STATUS_SUSPENDED    = 3;
-    
-    public static $CUST_STATUS_TEXT = array(
+
+    public static $CUST_STATUS_TEXT = [
         self::STATUS_NORMAL           => 'Normal',
         self::STATUS_NOTCONNECTED     => 'Not Connected',
         self::STATUS_SUSPENDED        => 'Suspended',
-    );
-    
+    ];
+
     const PEERING_POLICY_OPEN       = 'open';
     const PEERING_POLICY_SELECTIVE  = 'selective';
     const PEERING_POLICY_MANDATORY  = 'mandatory';
     const PEERING_POLICY_CLOSED     = 'closed';
-    
-    public static $PEERING_POLICIES = array(
+
+    public static $PEERING_POLICIES = [
         self::PEERING_POLICY_OPEN       => 'open',
         self::PEERING_POLICY_SELECTIVE  => 'selective',
         self::PEERING_POLICY_MANDATORY  => 'mandatory',
         self::PEERING_POLICY_CLOSED     => 'closed'
-    );
+    ];
 
-    const NOC_HOURS_24x7 = '24x7';    
-    const NOC_HOURS_8x5  = '8x5';    
-    const NOC_HOURS_8x7  = '8x7';    
-    const NOC_HOURS_12x5 = '12x5';    
-    const NOC_HOURS_12x7 = '12x7';    
-    
-    public static $NOC_HOURS = array(
+    const NOC_HOURS_24x7 = '24x7';
+    const NOC_HOURS_8x5  = '8x5';
+    const NOC_HOURS_8x7  = '8x7';
+    const NOC_HOURS_12x5 = '12x5';
+    const NOC_HOURS_12x7 = '12x7';
+
+    public static $NOC_HOURS = [
         self::NOC_HOURS_24x7 => '24x7',
         self::NOC_HOURS_8x5  => '8x5',
         self::NOC_HOURS_8x7  => '8x7',
         self::NOC_HOURS_12x5 => '12x5',
         self::NOC_HOURS_12x7 => '12x7'
-    );
-    
-    
+    ];
+
+   const MD5_SUPPORT_UNKNOWN   = 'UNKNOWN';
+   const MD5_SUPPORT_YES       = 'YES';
+   const MD5_SUPPORT_MANDATORY = 'MANDATORY';
+   const MD5_SUPPORT_PREFERRED = 'PREFERRED';
+   const MD5_SUPPORT_NO        = 'NO';
+
+    public static $MD5_SUPPORT = [
+        self::MD5_SUPPORT_UNKNOWN   => 'Unknown',
+        self::MD5_SUPPORT_YES       => 'Yes',
+        self::MD5_SUPPORT_MANDATORY => 'Yes - Mandatory',
+        self::MD5_SUPPORT_PREFERRED => 'Yes - Preferred',
+        self::MD5_SUPPORT_NO        => 'No'
+    ];
+
+
     /**
      * @var string $name
      */
-    private $name;
+    protected $name;
 
     /**
      * @var integer $type
      */
-    private $type;
+    protected $type;
 
     /**
      * @var string $shortname
      */
-    private $shortname;
+    protected $shortname;
 
     /**
      * @var integer $autsys
      */
-    private $autsys;
+    protected $autsys;
 
     /**
      * @var integer $maxprefixes
      */
-    private $maxprefixes;
+    protected $maxprefixes;
 
     /**
      * @var string $peeringemail
      */
-    private $peeringemail;
+    protected $peeringemail;
 
     /**
      * @var string $nocphone
      */
-    private $nocphone;
-
-    /**
-     * @var string $noc24hrphone
-     */
-    private $noc24hrphone;
+    protected $nocphone;
 
     /**
      * @var string $nocfax
      */
-    private $nocfax;
+    protected $nocfax;
 
     /**
      * @var string $nocemail
      */
-    private $nocemail;
+    protected $nocemail;
 
     /**
      * @var string $nochours
      */
-    private $nochours;
+    protected $nochours;
 
     /**
      * @var string $nocwww
      */
-    private $nocwww;
-
-    /**
-     * @var integer $irrdb
-     */
-    private $irrdb;
+    protected $nocwww;
 
     /**
      * @var string $peeringmacro
      */
-    private $peeringmacro;
+    protected $peeringmacro;
 
     /**
      * @var string $peeringpolicy
      */
-    private $peeringpolicy;
-
-    /**
-     * @var string $billingContact
-     */
-    private $billingContact;
-
-    /**
-     * @var string $billingAddress1
-     */
-    private $billingAddress1;
-
-    /**
-     * @var string $billingAddress2
-     */
-    private $billingAddress2;
-
-    /**
-     * @var string $billingCity
-     */
-    private $billingCity;
-
-    /**
-     * @var string $billingCountry
-     */
-    private $billingCountry;
+    protected $peeringpolicy;
 
     /**
      * @var string $corpwww
      */
-    private $corpwww;
+    protected $corpwww;
 
     /**
      * @var \DateTime $datejoin
      */
-    private $datejoin;
+    protected $datejoin;
 
     /**
      * @var \DateTime $dateleave
      */
-    private $dateleave;
+    protected $dateleave;
 
     /**
      * @var integer $status
      */
-    private $status;
+    protected $status;
 
     /**
      * @var boolean $activepeeringmatrix
      */
-    private $activepeeringmatrix;
-
-    /**
-     * @var string $notes
-     */
-    private $notes;
+    protected $activepeeringmatrix;
 
     /**
      * @var \DateTime $lastupdated
      */
-    private $lastupdated;
+    protected $lastupdated;
 
     /**
      * @var integer $lastupdatedby
      */
-    private $lastupdatedby;
+    protected $lastupdatedby;
 
     /**
      * @var string $creator
      */
-    private $creator;
+    protected $creator;
 
     /**
      * @var \DateTime $created
      */
-    private $created;
+    protected $created;
 
     /**
      * @var integer $id
      */
-    private $id;
+    protected $id;
 
     /**
      * @var \Doctrine\Common\Collections\ArrayCollection
      */
-    private $VirtualInterfaces;
+    protected $VirtualInterfaces;
 
     /**
      * @var \Doctrine\Common\Collections\ArrayCollection
      */
-    private $Contacts;
+    protected $Contacts;
 
     /**
      * @var \Doctrine\Common\Collections\ArrayCollection
      */
-    private $ConsoleServerConnections;
+    protected $ConsoleServerConnections;
 
     /**
      * @var \Doctrine\Common\Collections\ArrayCollection
      */
-    private $CustomerEquipment;
+    protected $CustomerEquipment;
 
     /**
      * @var \Doctrine\Common\Collections\ArrayCollection
      */
-    private $Peers;
+    protected $Peers;
 
     /**
      * @var \Doctrine\Common\Collections\ArrayCollection
      */
-    private $PeersWith;
+    protected $PeersWith;
 
     /**
      * @var \Doctrine\Common\Collections\ArrayCollection
      */
-    private $XCusts;
+    protected $XCusts;
 
     /**
      * @var \Doctrine\Common\Collections\ArrayCollection
      */
-    private $YCusts;
+    protected $YCusts;
 
     /**
      * @var \Doctrine\Common\Collections\ArrayCollection
      */
-    private $RSDroppedPrefixes;
+    protected $Users;
 
     /**
      * @var \Doctrine\Common\Collections\ArrayCollection
      */
-    private $Users;
+    protected $Traffic95ths;
 
     /**
      * @var \Doctrine\Common\Collections\ArrayCollection
      */
-    private $Traffic95ths;
+    protected $Traffic95thMonthlys;
 
     /**
      * @var \Doctrine\Common\Collections\ArrayCollection
      */
-    private $Traffic95thMonthlys;
+    protected $TrafficDailies;
 
     /**
-     * @var \Doctrine\Common\Collections\ArrayCollection
+     * @var \Entities\CompanyRegisteredDetail
      */
-    private $TrafficDailies;
+    protected $RegistrationDetails;
+
+    /**
+     * @var \Entities\CompanyBillingDetail
+     */
+    protected $BillingDetails;
+
+    /**
+     * @var \Doctrine\Common\Collections\Collection
+     */
+    protected $IXPs;
+
+
 
     /**
      * Constructor
@@ -292,13 +279,13 @@ class Customer
         $this->PeersWith = new \Doctrine\Common\Collections\ArrayCollection();
         $this->XCusts = new \Doctrine\Common\Collections\ArrayCollection();
         $this->YCusts = new \Doctrine\Common\Collections\ArrayCollection();
-        $this->RSDroppedPrefixes = new \Doctrine\Common\Collections\ArrayCollection();
         $this->Users = new \Doctrine\Common\Collections\ArrayCollection();
         $this->Traffic95ths = new \Doctrine\Common\Collections\ArrayCollection();
         $this->Traffic95thMonthlys = new \Doctrine\Common\Collections\ArrayCollection();
         $this->TrafficDailies = new \Doctrine\Common\Collections\ArrayCollection();
+        $this->RSPrefixes = new \Doctrine\Common\Collections\ArrayCollection();
     }
-    
+
     /**
      * Set name
      *
@@ -308,7 +295,7 @@ class Customer
     public function setName($name)
     {
         $this->name = $name;
-    
+
         return $this;
     }
 
@@ -331,7 +318,7 @@ class Customer
     public function setType($type)
     {
         $this->type = $type;
-    
+
         return $this;
     }
 
@@ -354,7 +341,7 @@ class Customer
     public function setShortname($shortname)
     {
         $this->shortname = $shortname;
-    
+
         return $this;
     }
 
@@ -377,7 +364,7 @@ class Customer
     public function setAutsys($autsys)
     {
         $this->autsys = $autsys;
-    
+
         return $this;
     }
 
@@ -400,7 +387,7 @@ class Customer
     public function setMaxprefixes($maxprefixes)
     {
         $this->maxprefixes = $maxprefixes;
-    
+
         return $this;
     }
 
@@ -423,7 +410,7 @@ class Customer
     public function setPeeringemail($peeringemail)
     {
         $this->peeringemail = $peeringemail;
-    
+
         return $this;
     }
 
@@ -446,7 +433,7 @@ class Customer
     public function setNocphone($nocphone)
     {
         $this->nocphone = $nocphone;
-    
+
         return $this;
     }
 
@@ -461,29 +448,6 @@ class Customer
     }
 
     /**
-     * Set noc24hrphone
-     *
-     * @param string $noc24hrphone
-     * @return Customer
-     */
-    public function setNoc24hrphone($noc24hrphone)
-    {
-        $this->noc24hrphone = $noc24hrphone;
-    
-        return $this;
-    }
-
-    /**
-     * Get noc24hrphone
-     *
-     * @return string
-     */
-    public function getNoc24hrphone()
-    {
-        return $this->noc24hrphone;
-    }
-
-    /**
      * Set nocfax
      *
      * @param string $nocfax
@@ -492,7 +456,7 @@ class Customer
     public function setNocfax($nocfax)
     {
         $this->nocfax = $nocfax;
-    
+
         return $this;
     }
 
@@ -515,7 +479,7 @@ class Customer
     public function setNocemail($nocemail)
     {
         $this->nocemail = $nocemail;
-    
+
         return $this;
     }
 
@@ -538,7 +502,7 @@ class Customer
     public function setNochours($nochours)
     {
         $this->nochours = $nochours;
-    
+
         return $this;
     }
 
@@ -561,7 +525,7 @@ class Customer
     public function setNocwww($nocwww)
     {
         $this->nocwww = $nocwww;
-    
+
         return $this;
     }
 
@@ -576,29 +540,6 @@ class Customer
     }
 
     /**
-     * Set irrdb
-     *
-     * @param integer $irrdb
-     * @return Customer
-     */
-    public function setIrrdb($irrdb)
-    {
-        $this->irrdb = $irrdb;
-    
-        return $this;
-    }
-
-    /**
-     * Get irrdb
-     *
-     * @return integer
-     */
-    public function getIrrdb()
-    {
-        return $this->irrdb;
-    }
-
-    /**
      * Set peeringmacro
      *
      * @param string $peeringmacro
@@ -607,7 +548,7 @@ class Customer
     public function setPeeringmacro($peeringmacro)
     {
         $this->peeringmacro = $peeringmacro;
-    
+
         return $this;
     }
 
@@ -630,7 +571,7 @@ class Customer
     public function setPeeringpolicy($peeringpolicy)
     {
         $this->peeringpolicy = $peeringpolicy;
-    
+
         return $this;
     }
 
@@ -645,121 +586,6 @@ class Customer
     }
 
     /**
-     * Set billingContact
-     *
-     * @param string $billingContact
-     * @return Customer
-     */
-    public function setBillingContact($billingContact)
-    {
-        $this->billingContact = $billingContact;
-    
-        return $this;
-    }
-
-    /**
-     * Get billingContact
-     *
-     * @return string
-     */
-    public function getBillingContact()
-    {
-        return $this->billingContact;
-    }
-
-    /**
-     * Set billingAddress1
-     *
-     * @param string $billingAddress1
-     * @return Customer
-     */
-    public function setBillingAddress1($billingAddress1)
-    {
-        $this->billingAddress1 = $billingAddress1;
-    
-        return $this;
-    }
-
-    /**
-     * Get billingAddress1
-     *
-     * @return string
-     */
-    public function getBillingAddress1()
-    {
-        return $this->billingAddress1;
-    }
-
-    /**
-     * Set billingAddress2
-     *
-     * @param string $billingAddress2
-     * @return Customer
-     */
-    public function setBillingAddress2($billingAddress2)
-    {
-        $this->billingAddress2 = $billingAddress2;
-    
-        return $this;
-    }
-
-    /**
-     * Get billingAddress2
-     *
-     * @return string
-     */
-    public function getBillingAddress2()
-    {
-        return $this->billingAddress2;
-    }
-
-    /**
-     * Set billingCity
-     *
-     * @param string $billingCity
-     * @return Customer
-     */
-    public function setBillingCity($billingCity)
-    {
-        $this->billingCity = $billingCity;
-    
-        return $this;
-    }
-
-    /**
-     * Get billingCity
-     *
-     * @return string
-     */
-    public function getBillingCity()
-    {
-        return $this->billingCity;
-    }
-
-    /**
-     * Set billingCountry
-     *
-     * @param string $billingCountry
-     * @return Customer
-     */
-    public function setBillingCountry($billingCountry)
-    {
-        $this->billingCountry = $billingCountry;
-    
-        return $this;
-    }
-
-    /**
-     * Get billingCountry
-     *
-     * @return string
-     */
-    public function getBillingCountry()
-    {
-        return $this->billingCountry;
-    }
-
-    /**
      * Set corpwww
      *
      * @param string $corpwww
@@ -768,7 +594,7 @@ class Customer
     public function setCorpwww($corpwww)
     {
         $this->corpwww = $corpwww;
-    
+
         return $this;
     }
 
@@ -791,7 +617,7 @@ class Customer
     public function setDatejoin($datejoin)
     {
         $this->datejoin = $datejoin;
-    
+
         return $this;
     }
 
@@ -814,7 +640,7 @@ class Customer
     public function setDateleave($dateleave)
     {
         $this->dateleave = $dateleave;
-    
+
         return $this;
     }
 
@@ -825,6 +651,15 @@ class Customer
      */
     public function getDateleave()
     {
+        // on 64bit system, MySQL's '0000-00-00' is in range and evaluates as a non-zero
+        // date - see: https://bugs.php.net/bug.php?id=60257
+
+        if( PHP_INT_SIZE == 4 )
+            return $this->dateleave;
+
+        if( $this->dateleave instanceof \DateTime && $this->dateleave->format( 'Y-m-d' ) == '-0001-11-30' )  // 0000-00-00 00:00:00 on 64bit systems
+            return null;
+
         return $this->dateleave;
     }
 
@@ -837,7 +672,7 @@ class Customer
     public function setStatus($status)
     {
         $this->status = $status;
-    
+
         return $this;
     }
 
@@ -860,7 +695,7 @@ class Customer
     public function setActivepeeringmatrix($activepeeringmatrix)
     {
         $this->activepeeringmatrix = $activepeeringmatrix;
-    
+
         return $this;
     }
 
@@ -875,29 +710,6 @@ class Customer
     }
 
     /**
-     * Set notes
-     *
-     * @param string $notes
-     * @return Customer
-     */
-    public function setNotes($notes)
-    {
-        $this->notes = $notes;
-    
-        return $this;
-    }
-
-    /**
-     * Get notes
-     *
-     * @return string
-     */
-    public function getNotes()
-    {
-        return $this->notes;
-    }
-
-    /**
      * Set lastupdated
      *
      * @param \DateTime $lastupdated
@@ -906,7 +718,7 @@ class Customer
     public function setLastupdated($lastupdated)
     {
         $this->lastupdated = $lastupdated;
-    
+
         return $this;
     }
 
@@ -929,7 +741,7 @@ class Customer
     public function setLastupdatedby($lastupdatedby)
     {
         $this->lastupdatedby = $lastupdatedby;
-    
+
         return $this;
     }
 
@@ -952,7 +764,7 @@ class Customer
     public function setCreator($creator)
     {
         $this->creator = $creator;
-    
+
         return $this;
     }
 
@@ -975,7 +787,7 @@ class Customer
     public function setCreated($created)
     {
         $this->created = $created;
-    
+
         return $this;
     }
 
@@ -1008,7 +820,7 @@ class Customer
     public function addVirtualInterface(\Entities\VirtualInterface $virtualInterfaces)
     {
         $this->VirtualInterfaces[] = $virtualInterfaces;
-    
+
         return $this;
     }
 
@@ -1041,7 +853,7 @@ class Customer
     public function addContact(\Entities\Contact $contacts)
     {
         $this->Contacts[] = $contacts;
-    
+
         return $this;
     }
 
@@ -1074,7 +886,7 @@ class Customer
     public function addConsoleServerConnection(\Entities\ConsoleServerConnection $consoleServerConnections)
     {
         $this->ConsoleServerConnections[] = $consoleServerConnections;
-    
+
         return $this;
     }
 
@@ -1107,7 +919,7 @@ class Customer
     public function addCustomerEquipment(\Entities\CustomerEquipment $customerEquipment)
     {
         $this->CustomerEquipment[] = $customerEquipment;
-    
+
         return $this;
     }
 
@@ -1140,7 +952,7 @@ class Customer
     public function addPeer(\Entities\PeeringManager $peers)
     {
         $this->Peers[] = $peers;
-    
+
         return $this;
     }
 
@@ -1173,7 +985,7 @@ class Customer
     public function addPeersWith(\Entities\PeeringManager $peersWith)
     {
         $this->PeersWith[] = $peersWith;
-    
+
         return $this;
     }
 
@@ -1206,7 +1018,7 @@ class Customer
     public function addXCust(\Entities\PeeringMatrix $xCusts)
     {
         $this->XCusts[] = $xCusts;
-    
+
         return $this;
     }
 
@@ -1239,7 +1051,7 @@ class Customer
     public function addYCust(\Entities\PeeringMatrix $yCusts)
     {
         $this->YCusts[] = $yCusts;
-    
+
         return $this;
     }
 
@@ -1264,39 +1076,6 @@ class Customer
     }
 
     /**
-     * Add RSDroppedPrefixes
-     *
-     * @param Entities\RSDroppedPrefix $rSDroppedPrefixes
-     * @return Customer
-     */
-    public function addRSDroppedPrefixe(\Entities\RSDroppedPrefix $rSDroppedPrefixes)
-    {
-        $this->RSDroppedPrefixes[] = $rSDroppedPrefixes;
-    
-        return $this;
-    }
-
-    /**
-     * Remove RSDroppedPrefixes
-     *
-     * @param Entities\RSDroppedPrefix $rSDroppedPrefixes
-     */
-    public function removeRSDroppedPrefixe(\Entities\RSDroppedPrefix $rSDroppedPrefixes)
-    {
-        $this->RSDroppedPrefixes->removeElement($rSDroppedPrefixes);
-    }
-
-    /**
-     * Get RSDroppedPrefixes
-     *
-     * @return Doctrine\Common\Collections\Collection
-     */
-    public function getRSDroppedPrefixes()
-    {
-        return $this->RSDroppedPrefixes;
-    }
-
-    /**
      * Add Users
      *
      * @param Entities\User $users
@@ -1305,7 +1084,7 @@ class Customer
     public function addUser(\Entities\User $users)
     {
         $this->Users[] = $users;
-    
+
         return $this;
     }
 
@@ -1338,7 +1117,7 @@ class Customer
     public function addTraffic95th(\Entities\Traffic95th $traffic95ths)
     {
         $this->Traffic95ths[] = $traffic95ths;
-    
+
         return $this;
     }
 
@@ -1371,7 +1150,7 @@ class Customer
     public function addTraffic95thMonthly(\Entities\Traffic95thMonthly $traffic95thMonthlys)
     {
         $this->Traffic95thMonthlys[] = $traffic95thMonthlys;
-    
+
         return $this;
     }
 
@@ -1404,7 +1183,7 @@ class Customer
     public function addTrafficDailie(\Entities\TrafficDaily $trafficDailies)
     {
         $this->TrafficDailies[] = $trafficDailies;
-    
+
         return $this;
     }
 
@@ -1427,10 +1206,11 @@ class Customer
     {
         return $this->TrafficDailies;
     }
+    
     /**
      * @var string $noc24hphone
      */
-    private $noc24hphone;
+    protected $noc24hphone;
 
 
     /**
@@ -1442,7 +1222,7 @@ class Customer
     public function setNoc24hphone($noc24hphone)
     {
         $this->noc24hphone = $noc24hphone;
-    
+
         return $this;
     }
 
@@ -1455,11 +1235,11 @@ class Customer
     {
         return $this->noc24hphone;
     }
+
     /**
      * @var \Doctrine\Common\Collections\ArrayCollection
      */
-    private $SecEvents;
-
+    protected $SecEvents;
 
     /**
      * Add SecEvents
@@ -1470,7 +1250,7 @@ class Customer
     public function addSecEvent(\Entities\SecEvent $secEvents)
     {
         $this->SecEvents[] = $secEvents;
-    
+
         return $this;
     }
 
@@ -1493,22 +1273,17 @@ class Customer
     {
         return $this->SecEvents;
     }
-    
-    
+
+
     public function hasLeft()
     {
         // sigh. Using a date field to determine if an account is closed or not is a
         // very bad idea and should be changed => FIXME
-        //
-        // on 64bit system, MySQL's '0000-00-00' is in range and evaluates as a non-zero
-        // date - see: https://bugs.php.net/bug.php?id=60257
-        if( $this->getDateleave() instanceof \DateTime && $this->getDateleave()->format( 'Y-m-d' ) == '-0001-11-30' )  // 0000-00-00 on 64bit systems
-            return false;
-        
+
         return $this->getDateleave() != null;
     }
-    
-    
+
+
     /**
      * Find all users of privilege CUSTADMIN for this customer
      *
@@ -1517,14 +1292,14 @@ class Customer
     public function getAdminUsers()
     {
         $ausers = [];
-        
+
         foreach( $this->getUsers() as $u )
             if( $u->getPrivs() == \Entities\User::AUTH_CUSTADMIN )
                 $ausers[] = $u;
-        
+
         return $ausers;
     }
-    
+
     /**
      * Check if this customer is of the named type
      * @return boolean
@@ -1562,4 +1337,691 @@ class Customer
     }
 
 
+    /**
+     * Does the customer have private VLANs?
+     *
+     * A private VLAN is a VLAN between a subset of members (usually
+     * just two).
+     *
+     * @return bool
+     */
+    public function hasPrivateVLANs()
+    {
+        foreach( $this->getVirtualInterfaces() as $vi )
+        {
+            foreach( $vi->getVlanInterfaces() as $vli )
+            {
+                if( $vli->getVlan()->getPrivate() )
+                    return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Get private VLAN information as an associate array
+     *
+     * Useful utility function for displaying a customers private VLANs in the
+     * overview page and the customer's own portal.
+     *
+     * Response is an array such as:
+     *
+     *     [8] => [                          // VLAN ID
+     *         [vlis] => [
+     *             // VlanInterface objects for the customer that are on this private VLAN
+     *         ],
+     *         [members] => [
+     *             // Customer objects for all customers (including this one) that share this VLAN
+     *         ]
+     *     ]
+     *
+     *
+     * @return array Private VLAN details
+     */
+    public function getPrivateVlanDetails()
+    {
+        if( !$this->hasPrivateVLANs() )
+            return false;
+
+        $pvlans = [];
+
+        foreach( $this->getVirtualInterfaces() as $vi )
+        {
+            foreach( $vi->getVlanInterfaces() as $vli )
+            {
+                if( $vli->getVlan()->getPrivate() )
+                {
+                    if( !isset( $pvlans[ $vli->getVlan()->getId() ]['vlis'] ) )
+                        $pvlans[ $vli->getVlan()->getId() ]['vlis'] = [];
+
+                    $pvlans[ $vli->getVlan()->getId() ]['vlis'][] = $vli;
+
+                    if( !isset( $pvlans[ $vli->getVlan()->getId() ]['members'] ) )
+                    {
+                        $pvlans[ $vli->getVlan()->getId() ]['members'] = [];
+
+                        foreach( $vli->getVlan()->getVlanInterfaces() as $vli2 )
+                            $pvlans[ $vli->getVlan()->getId() ]['members'][ $vli2->getVirtualInterface()->getCustomer()->getId() ]
+                                = $vli2->getVirtualInterface()->getCustomer();
+                    }
+                }
+            }
+        }
+
+        return $pvlans;
+    }
+
+    /**
+     * @var \Doctrine\Common\Collections\Collection
+     */
+    protected $RSPrefixes;
+
+
+    /**
+     * Add RSPrefixes
+     *
+     * @param \Entities\RSPrefix $rSPrefixes
+     * @return Customer
+     */
+    public function addRSPrefixes(\Entities\RSPrefix $rSPrefixes)
+    {
+        $this->RSPrefixes[] = $rSPrefixes;
+
+        return $this;
+    }
+
+    /**
+     * Remove RSPrefixes
+     *
+     * @param \Entities\RSPrefix $rSPrefixes
+     */
+    public function removeRSPrefixes(\Entities\RSPrefix $rSPrefixes)
+    {
+        $this->RSPrefixes->removeElement($rSPrefixes);
+    }
+
+    /**
+     * Get RSPrefixes
+     *
+     * @return \Doctrine\Common\Collections\Collection
+     */
+    public function getRSPrefixes()
+    {
+        return $this->RSPrefixes;
+    }
+
+
+    /**
+     * Is the customer a route server client on any of their VLAN interfaces?
+     * @param int $proto One of [4,6]. Defaults to 4.
+     * @return boolean
+     */
+    public function isRouteServerClient( $proto = 4 )
+    {
+        if( !in_array( $proto, [ 4, 6 ] ) )
+            throw new \IXP_Exception( 'Invalid protocol' );
+        
+        $fnEnabled = "getIpv{$proto}enabled";
+         
+        foreach( $this->getVirtualInterfaces() as $vi )
+        {
+            foreach( $vi->getVlanInterfaces() as $vli )
+            {
+                if( $vli->$fnEnabled() && $vli->getRsclient() )
+                    return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Is the customer an AS112 client on any of their VLAN interfaces?
+     * @return boolean
+     */
+    public function isAS112Client()
+    {
+        foreach( $this->getVirtualInterfaces() as $vi )
+        {
+            foreach( $vi->getVlanInterfaces() as $vli )
+            {
+                if( $vli->getAs112client() )
+                    return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * @var \Entities\IRRDBConfig
+     */
+    protected $IRRDB;
+
+    /**
+     * Set IRRDB
+     *
+     * @param \Entities\IRRDBConfig $iRRDB
+     * @return Customer
+     */
+    public function setIRRDB(\Entities\IRRDBConfig $iRRDB = null)
+    {
+        $this->IRRDB = $iRRDB;
+
+        return $this;
+    }
+
+    /**
+     * Get IRRDB
+     *
+     * @return \Entities\IRRDBConfig
+     */
+    public function getIRRDB()
+    {
+        return $this->IRRDB;
+    }
+
+    /**
+     * @var string
+     */
+    protected $peeringDb;
+
+
+    /**
+     * Set peeringDb
+     *
+     * @param string $peeringDb
+     * @return Customer
+     */
+    public function setPeeringDb($peeringDb)
+    {
+        $this->peeringDb = $peeringDb;
+
+        return $this;
+    }
+
+    /**
+     * Get peeringDb
+     *
+     * @return string
+     */
+    public function getPeeringDb()
+    {
+        return $this->peeringDb;
+    }
+    
+    /**
+     * @var \Doctrine\Common\Collections\Collection
+     */
+    protected $Notes;
+
+    /**
+     * Add Notes
+     *
+     * @param \Entities\CustomerNote $notes
+     * @return Customer
+     */
+    public function addNote(\Entities\CustomerNote $notes)
+    {
+        $this->Notes[] = $notes;
+
+        return $this;
+    }
+
+    /**
+     * Remove Notes
+     *
+     * @param \Entities\CustomerNote $notes
+     */
+    public function removeNote(\Entities\CustomerNote $notes)
+    {
+        $this->Notes->removeElement($notes);
+    }
+
+    /**
+     * Get Notes
+     *
+     * @return \Doctrine\Common\Collections\Collection
+     */
+    public function getNotes()
+    {
+        return $this->Notes;
+    }
+
+    /**
+     * @var string
+     */
+    protected $peeringmacrov6;
+
+    /**
+     * Set peeringmacrov6
+     *
+     * @param string $peeringmacrov6
+     * @return Customer
+     */
+    public function setPeeringmacrov6($peeringmacrov6)
+    {
+        $this->peeringmacrov6 = $peeringmacrov6;
+
+        return $this;
+    }
+
+    /**
+     * Get peeringmacrov6
+     *
+     * @return string
+     */
+    public function getPeeringmacrov6()
+    {
+        return $this->peeringmacrov6;
+    }
+
+    /**
+     * Set RegistrationDetails
+     *
+     * @param \Entities\CompanyRegisteredDetail $registrationDetails
+     * @return Customer
+     */
+    public function setRegistrationDetails(\Entities\CompanyRegisteredDetail $registrationDetails)
+    {
+        $this->RegistrationDetails = $registrationDetails;
+
+        return $this;
+    }
+
+    /**
+     * Get RegistrationDetails
+     *
+     * @return \Entities\CompanyRegisteredDetail
+     */
+    public function getRegistrationDetails()
+    {
+        return $this->RegistrationDetails;
+    }
+
+    /**
+     * Set BillingDetails
+     *
+     * @param \Entities\CompanyBillingDetail $billingDetails
+     * @return Customer
+     */
+    public function setBillingDetails(\Entities\CompanyBillingDetail $billingDetails)
+    {
+        $this->BillingDetails = $billingDetails;
+
+        return $this;
+    }
+
+    /**
+     * Get BillingDetails
+     *
+     * @return \Entities\CompanyBillingDetail
+     */
+    public function getBillingDetails()
+    {
+        return $this->BillingDetails;
+    }
+    
+    /**
+     * @var string
+     */
+    protected $abbreviatedName;
+
+    /**
+     * @var string
+     */
+    protected $MD5Support;
+
+    /**
+     * Set abbreviatedName
+     *
+     * @param string $abbreviatedName
+     * @return Customer
+     */
+    public function setAbbreviatedName($abbreviatedName)
+    {
+        $this->abbreviatedName = $abbreviatedName;
+
+        return $this;
+    }
+
+    /**
+     * Get abbreviatedName
+     *
+     * @return string
+     */
+    public function getAbbreviatedName()
+    {
+        return $this->abbreviatedName;
+    }
+
+    /**
+     * Set MD5Support
+     *
+     * @param string $mD5Support
+     * @return Customer
+     */
+    public function setMD5Support($mD5Support)
+    {
+        $this->MD5Support = $mD5Support;
+
+        return $this;
+    }
+
+    /**
+     * Get MD5Support
+     *
+     * @return string
+     */
+    public function getMD5Support()
+    {
+        return $this->MD5Support;
+    }
+    
+    /**
+     * @var boolean
+     */
+    protected $isReseller;
+
+    /**
+     * @var \Doctrine\Common\Collections\Collection
+     */
+    protected $ResoldCustomers;
+
+    /**
+     * @var \Entities\Customer
+     */
+    protected $Reseller;
+
+
+    /**
+     * Set isReseller
+     *
+     * @param boolean $isReseller
+     * @return Customer
+     */
+    public function setIsReseller($isReseller)
+    {
+        $this->isReseller = $isReseller;
+    
+        return $this;
+    }
+
+    /**
+     * Get isReseller
+     *
+     * @return boolean
+     */
+    public function getIsReseller()
+    {
+        return $this->isReseller;
+    }
+
+    /**
+     * Checks if customer is reseller
+     *
+     * @return boolean
+     */
+    public function isReseller()
+    {
+        return $this->isReseller;
+    }
+
+    /**
+     * Checks if customer is resold customer
+     *
+     * @return boolean
+     */
+    public function isResoldCustomer()
+    {
+        return $this->getReseller() ? true : false;
+    }
+
+    /**
+     * Add ResoldCustomers
+     *
+     * @param \Entities\Customer $resoldCustomers
+     * @return Customer
+     */
+    public function addResoldCustomer(\Entities\Customer $resoldCustomers)
+    {
+        $this->ResoldCustomers[] = $resoldCustomers;
+    
+        return $this;
+    }
+
+    /**
+     * Remove ResoldCustomers
+     *
+     * @param \Entities\Customer $resoldCustomers
+     */
+    public function removeResoldCustomer(\Entities\Customer $resoldCustomers)
+    {
+        $this->ResoldCustomers->removeElement($resoldCustomers);
+    }
+
+    /**
+     * Get ResoldCustomers
+     *
+     * @return \Doctrine\Common\Collections\Collection
+     */
+    public function getResoldCustomers()
+    {
+        return $this->ResoldCustomers;
+    }
+
+    /**
+     * Set Reseller
+     *
+     * @param \Entities\Customer $reseller
+     * @return Customer
+     */
+    public function setReseller(\Entities\Customer $reseller = null)
+    {
+        $this->Reseller = $reseller;
+    
+        return $this;
+    }
+
+    /**
+     * Get Reseller
+     *
+     * @return \Entities\Customer
+     */
+    public function getReseller()
+    {
+        return $this->Reseller;
+    }
+
+    /**
+     * Add IXPs
+     *
+     * @param \Entities\IXP $iXPs
+     * @return Customer
+     */
+    public function addIXP(\Entities\IXP $iXPs)
+    {
+        $this->IXPs[] = $iXPs;
+    
+        return $this;
+    }
+
+    /**
+     * Remove IXPs
+     *
+     * @param \Entities\IXP $iXPs
+     */
+    public function removeIXP(\Entities\IXP $iXPs)
+    {
+        $this->IXPs->removeElement($iXPs);
+    }
+
+    /**
+     * Get IXPs
+     *
+     * @return \Doctrine\Common\Collections\Collection
+     */
+    public function getIXPs()
+    {
+        return $this->IXPs;
+    }
+    /**
+     * @var \Doctrine\Common\Collections\Collection
+     */
+    private $IrrdbPrefixes;
+
+
+    /**
+     * Add IrrdbPrefixes
+     *
+     * @param \Entities\IrrdbPrefix $irrdbPrefixes
+     * @return Customer
+     */
+    public function addIrrdbPrefixes(\Entities\IrrdbPrefix $irrdbPrefixes)
+    {
+        $this->IrrdbPrefixes[] = $irrdbPrefixes;
+    
+        return $this;
+    }
+
+    /**
+     * Remove IrrdbPrefixes
+     *
+     * @param \Entities\IrrdbPrefix $irrdbPrefixes
+     */
+    public function removeIrrdbPrefixes(\Entities\IrrdbPrefix $irrdbPrefixes)
+    {
+        $this->IrrdbPrefixes->removeElement($irrdbPrefixes);
+    }
+
+    /**
+     * Get IrrdbPrefixes
+     *
+     * @param int $proto Optionally limit to a given protocol (4/6)
+     * @return \Doctrine\Common\Collections\Collection
+     */
+    public function getIrrdbPrefixes( $proto = false )
+    {
+        if( $proto === false )
+            return $this->IrrdbPrefixes;
+        
+        $prefixes = [];
+        foreach( $this->IrrdbPrefixes as $p )
+            if( $p->getProtocol() == $proto )
+                $prefixes[] = $p;
+            
+        return $prefixes;
+    }
+    
+    /**
+     * Useful function to get the appropriate AS macro or ASN for a customer
+     * for a given protocol.
+     *
+     * One example usage is in IrrdbCli for bgpq3. bgpq3 requires ASNs to
+     * be formatted as `asxxxx` so we set `$asnPrefix = 'as'` in this case.
+     *
+     * @param int $protocol One of 4 or 6 (defaults to 4)
+     * @param string $asnPrefix A prefix for the ASN if no macro is present. See above.
+     * @return The ASN / AS macro as appropriate
+     */
+    public function resolveAsMacro( $protocol = 4, $asnPrefix = '' )
+    {
+        if( !in_array( $protocol, [ 4, 6 ] ) )
+            throw new \IXP_Exception( 'Invalid / unknown protocol. 4/6 accepted only.' );
+        
+        // find the appropriate ASN or macro
+        if( $protocol == 6 && strlen( $this->getPeeringmacrov6() ) > 3 )
+            $asmacro = $this->getPeeringmacrov6();
+        else if( strlen( $this->getPeeringmacro() ) > 3 )
+            $asmacro = $this->getPeeringmacro();
+        else
+            $asmacro = $asnPrefix . $this->getAutsys();
+
+        return $asmacro;
+    }
+    
+    /**
+     * Add IrrdbPrefixes
+     *
+     * @param \Entities\IrrdbPrefix $irrdbPrefixes
+     * @return Customer
+     */
+    public function addIrrdbPrefixe(\Entities\IrrdbPrefix $irrdbPrefixes)
+    {
+        $this->IrrdbPrefixes[] = $irrdbPrefixes;
+    
+        return $this;
+    }
+
+    /**
+     * Remove IrrdbPrefixes
+     *
+     * @param \Entities\IrrdbPrefix $irrdbPrefixes
+     */
+    public function removeIrrdbPrefixe(\Entities\IrrdbPrefix $irrdbPrefixes)
+    {
+        $this->IrrdbPrefixes->removeElement($irrdbPrefixes);
+    }
+
+    /**
+     * Add RSPrefixes
+     *
+     * @param \Entities\RSPrefix $rSPrefixes
+     * @return Customer
+     */
+    public function addRSPrefixe(\Entities\RSPrefix $rSPrefixes)
+    {
+        $this->RSPrefixes[] = $rSPrefixes;
+    
+        return $this;
+    }
+
+    /**
+     * Remove RSPrefixes
+     *
+     * @param \Entities\RSPrefix $rSPrefixes
+     */
+    public function removeRSPrefixe(\Entities\RSPrefix $rSPrefixes)
+    {
+        $this->RSPrefixes->removeElement($rSPrefixes);
+    }
+    /**
+     * @var \Doctrine\Common\Collections\Collection
+     */
+    private $IrrdbASNs;
+
+
+    /**
+     * Add IrrdbASNs
+     *
+     * @param \Entities\IrrdbAsn $irrdbASNs
+     * @return Customer
+     */
+    public function addIrrdbASN(\Entities\IrrdbAsn $irrdbASNs)
+    {
+        $this->IrrdbASNs[] = $irrdbASNs;
+    
+        return $this;
+    }
+
+    /**
+     * Remove IrrdbASNs
+     *
+     * @param \Entities\IrrdbAsn $irrdbASNs
+     */
+    public function removeIrrdbASN(\Entities\IrrdbAsn $irrdbASNs)
+    {
+        $this->IrrdbASNs->removeElement($irrdbASNs);
+    }
+
+    /**
+     * Get IrrdbASNs
+     *
+     * @return \Doctrine\Common\Collections\Collection 
+     */
+    public function getIrrdbASNs()
+    {
+        return $this->IrrdbASNs;
+    }
 }

@@ -126,18 +126,6 @@ class Switcher extends \Entities\Switcher implements \Doctrine\ORM\Proxy\Proxy
         return parent::getModel();
     }
 
-    public function setActrive($actrive)
-    {
-        $this->__load();
-        return parent::setActrive($actrive);
-    }
-
-    public function getActrive()
-    {
-        $this->__load();
-        return parent::getActrive();
-    }
-
     public function setNotes($notes)
     {
         $this->__load();
@@ -249,10 +237,94 @@ class Switcher extends \Entities\Switcher implements \Doctrine\ORM\Proxy\Proxy
         return parent::getActive();
     }
 
+    public function setHostname($hostname)
+    {
+        $this->__load();
+        return parent::setHostname($hostname);
+    }
+
+    public function getHostname()
+    {
+        $this->__load();
+        return parent::getHostname();
+    }
+
+    public function setOs($os)
+    {
+        $this->__load();
+        return parent::setOs($os);
+    }
+
+    public function getOs()
+    {
+        $this->__load();
+        return parent::getOs();
+    }
+
+    public function setOsDate($osDate)
+    {
+        $this->__load();
+        return parent::setOsDate($osDate);
+    }
+
+    public function getOsDate()
+    {
+        $this->__load();
+        return parent::getOsDate();
+    }
+
+    public function setOsVersion($osVersion)
+    {
+        $this->__load();
+        return parent::setOsVersion($osVersion);
+    }
+
+    public function getOsVersion()
+    {
+        $this->__load();
+        return parent::getOsVersion();
+    }
+
+    public function setLastPolled($lastPolled)
+    {
+        $this->__load();
+        return parent::setLastPolled($lastPolled);
+    }
+
+    public function getLastPolled()
+    {
+        $this->__load();
+        return parent::getLastPolled();
+    }
+
+    public function snmpPoll($host, $logger = false)
+    {
+        $this->__load();
+        return parent::snmpPoll($host, $logger);
+    }
+
+    public function snmpPollSwitchPorts($host, $logger = false, &$result = false)
+    {
+        $this->__load();
+        return parent::snmpPollSwitchPorts($host, $logger, $result);
+    }
+
+    public function setSerialNumber($serialNumber)
+    {
+        $this->__load();
+        return parent::setSerialNumber($serialNumber);
+    }
+
+    public function getSerialNumber()
+    {
+        $this->__load();
+        return parent::getSerialNumber();
+    }
+
 
     public function __sleep()
     {
-        return array('__isInitialized__', 'name', 'ipv4addr', 'ipv6addr', 'snmppasswd', 'infrastructure', 'switchtype', 'model', 'active', 'notes', 'id', 'Ports', 'ConsoleServerConnections', 'SecEvents', 'Cabinet', 'Vendor');
+        return array('__isInitialized__', 'name', 'hostname', 'ipv4addr', 'ipv6addr', 'snmppasswd', 'switchtype', 'model', 'active', 'os', 'osDate', 'osVersion', 'serialNumber', 'lastPolled', 'notes', 'id', 'Ports', 'ConsoleServerConnections', 'SecEvents', 'Infrastructure', 'Cabinet', 'Vendor');
     }
 
     public function __clone()

@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <doctrine-mapping xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping" xsi="http://www.w3.org/2001/XMLSchema-instance" schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
-  <entity name="Entities\User" table="user" repository-class="Repositories\User" tableName="user">
+  <entity name="Entities\User" repository-class="Repositories\User" table="user" tableName="user">
     <id name="id" type="integer">
       <generator strategy="AUTO"/>
     </id>
@@ -20,13 +20,10 @@
         <join-column name="custid" referenced-column-name="id"/>
       </join-columns>
     </many-to-one>
-    <many-to-one field="Parent" target-entity="Entities\User" inversed-by="Children">
-      <join-columns>
-        <join-column name="parent_id" referenced-column-name="id"/>
-      </join-columns>
-    </many-to-one>
+    <one-to-many field="ApiKeys" target-entity="Entities\ApiKey" mapped-by="User"/>
+    <one-to-many field="LastLogins" target-entity="Entities\UserLoginHistory" mapped-by="User"/>
+    <one-to-one field="Contact" target-entity="Entities\Contact" mapped-by="User"/>
     <one-to-many field="Meetings" target-entity="Entities\Meeting" mapped-by="CreatedBy"/>
-    <one-to-many field="Children" target-entity="Entities\User" mapped-by="Parent"/>
     <one-to-many field="Preferences" target-entity="Entities\UserPreference" mapped-by="User"/>
     <one-to-many field="ChangeLogs" target-entity="Entities\ChangeLog" mapped-by="User"/>
   </entity>

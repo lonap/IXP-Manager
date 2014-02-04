@@ -26,13 +26,17 @@
  * Controller: Manage virtual interfaces
  *
  * @author     Barry O'Donovan <barry@opensolutions.ie>
- * @category   INEX
- * @package    INEX_Controller
+ * @category   IXP
+ * @package    IXP_Controller
  * @copyright  Copyright (c) 2009 - 2012, Internet Neutral Exchange Association Ltd
  * @license    http://www.gnu.org/licenses/gpl-2.0.html GNU GPL V2.0
  */
-class VirtualInterfaceController extends INEX_Controller_FrontEnd
+class VirtualInterfaceController extends IXP_Controller_FrontEnd
 {
+    
+    use IXP_Controller_Trait_Interfaces;
+    
+    
     /**
      * This function sets up the frontend controller
      */
@@ -40,7 +44,7 @@ class VirtualInterfaceController extends INEX_Controller_FrontEnd
     {
         $this->view->feParams = $this->_feParams = (object)[
             'entity'        => '\\Entities\\VirtualInterface',
-            'form'          => 'INEX_Form_Interface_Virtual',
+            'form'          => 'IXP_Form_Interface_Virtual',
             'pagetitle'     => '(Virtual) Interfaces',
         
             'titleSingular' => 'Virtual Interface',
@@ -91,7 +95,6 @@ class VirtualInterfaceController extends INEX_Controller_FrontEnd
             default:
                 $this->redirectAndEnsureDie( 'error/insufficient-permissions' );
         }
-    
     }
     
     public function viewAction()
@@ -110,13 +113,16 @@ class VirtualInterfaceController extends INEX_Controller_FrontEnd
             ->select(
                     'vi.id,
                     c.name AS customer, c.id AS custid, c.shortname AS shortname,
-                    l.name AS location, s.name AS switch,
+                    COUNT( ppi.id ) as ppid, COUNT( pfi.id ) as fpid,
+                    l.name AS location, s.name AS switch, sp.type as type,
                     sp.name AS port, SUM( pi.speed ) AS speed, COUNT( pi.id ) AS ports'
                  )
             ->from( '\\Entities\\VirtualInterface', 'vi' )
             ->leftJoin( 'vi.Customer', 'c' )
             ->leftJoin( 'vi.PhysicalInterfaces', 'pi' )
             ->leftJoin( 'pi.SwitchPort', 'sp' )
+            ->leftJoin( 'pi.PeeringPhysicalInterface', 'ppi' )
+            ->leftJoin( 'pi.FanoutPhysicalInterface', 'pfi' )
             ->leftJoin( 'sp.Switcher', 's' )
             ->leftJoin( 's.Cabinet', 'cab' )
             ->leftJoin( 'cab.Location', 'l' )
@@ -139,7 +145,23 @@ class VirtualInterfaceController extends INEX_Controller_FrontEnd
         {
             $this->getLogger()->info( "Deleting physical interface with id #{$pi->getId()} while deleting virtual interface #{$vi->getId()}" );
             $vi->removePhysicalInterface( $pi );
+            
+            if( $pi->getSwitchPort()->getType() == \Entities\SwitchPort::TYPE_PEERING && $pi->getFanoutPhysicalInterface() )
+            {
+                $pi->getSwitchPort()->setPhysicalInterface( null );
+                $pi->getFanoutPhysicalInterface()->getSwitchPort()->setType( \Entities\SwitchPort::TYPE_PEERING );
+            }
+            else if( $pi->getSwitchPort()->getType() == \Entities\SwitchPort::TYPE_FANOUT && $pi->getPeeringPhysicalInterface() )
+            {
+                if( $this->getParam( 'related', false ) )
+                    $this->removeRelatedInterface( $pi );
+
+                $pi->getPeeringPhysicalInterface()->setFanoutPhysicalInterface( null );
+            }
             $this->getD2EM()->remove( $pi );
+           
+            if( $this->getParam( 'related', false ) && $pi->getRelatedInterface() )
+                $this->removeRelatedInterface( $pi );
         }
         
         foreach( $vi->getVlanInterfaces() as $vli )
@@ -152,16 +174,15 @@ class VirtualInterfaceController extends INEX_Controller_FrontEnd
         foreach( $vi->getMACAddresses() as $ma )
         {
             $this->getLogger()->info( "Deleting MAC Address record #{$ma->getMac()} while deleting virtual interface #{$vi->getId()}" );
-            $vi->removeMACAddresse( $ma );
+            $vi->removeMACAddresses( $ma );
             $this->getD2EM()->remove( $ma );
         }
         
         return true;
     }
     
-    
     /**
-     * @param INEX_Form_Interface_Virtual $form The form object
+     * @param IXP_Form_Interface_Virtual $form The form object
      * @param \Entities\VirtualInterface $object The Doctrine2 entity (being edited or blank for add)
      * @param bool $isEdit True of we are editing an object, false otherwise
      * @param array $options Options passed onto Zend_Form
@@ -174,15 +195,37 @@ class VirtualInterfaceController extends INEX_Controller_FrontEnd
         {
             $form->getElement( 'custid' )->setValue( $object->getCustomer()->getId() );
 
+            $this->view->ptypes   = \Entities\SwitchPort::$TYPES;
             $this->view->cust     = $object->getCustomer();
             $this->view->physInts = $object->getPhysicalInterfaces();
             $this->view->vlanInts = $object->getVlanInterfaces();
+            $this->view->type     = $object->getType();
         }
+    }
+    
+    /**
+     * You can add `OSS_Message`s here and redirect to a custom destination after a
+     * successful add / edit operation.
+     *
+     * By default it returns `false`.
+     *
+     * On `false`, the default action (`index`) is called and a standard success message is displayed.
+     *
+     *
+     * @param OSS_Form $form The form object
+     * @param object $object The Doctrine2 entity (being edited or blank for add)
+     * @param bool $isEdit True of we are editing an object, false otherwise
+     * @return bool `false` for standard message and redirection, otherwise redirect within this function
+     */
+    protected function addDestinationOnSuccess( $form, $object, $isEdit  )
+    {
+        $this->addMessage( 'Virtual interface successfully ' . ( $isEdit ? ' edited.' : ' added.' ), OSS_Message::SUCCESS );
+        $this->redirect( 'virtual-interface/edit/id/' . $object->getId() );
     }
     
     
     /**
-     * @param INEX_Form_Interface_Virtual $form The form object
+     * @param IXP_Form_Interface_Virtual $form The form object
      * @param \Entities\VirtualInterface $object The Doctrine2 entity (being edited or blank for add)
      * @param bool $isEdit True of we are editing an object, false otherwise
      * @return void
@@ -199,60 +242,79 @@ class VirtualInterfaceController extends INEX_Controller_FrontEnd
 
     public function addWizardAction()
     {
-        $this->view->form = $form = new INEX_Form_Interface_AddWizard();
+        $this->view->form = $form = new IXP_Form_Interface_AddWizard();
+        if( $this->resellerMode() )
+            $this->view->resoldCusts = json_encode( $this->getD2R( "\\Entities\\Customer" )->getResoldCustomerNames() );
+
+        $form->enableFanoutPort( $this->resellerMode() );
     
         // Process a submitted form if it passes initial validation
-        if( $this->getRequest()->isPost() && $form->isValid( $_POST ) )
+        if( $this->getRequest()->isPost() )
         {
-            // check customer information
-            if( !( $cust = $this->getD2EM()->getRepository( '\\Entities\\Customer' )->find( $form->getValue( 'custid' ) ) ) )
+            // make sure we have a custid
+            if( !isset( $_POST['custid'] ) && $this->getParam( 'custid', false ) )
+                $_POST['custid'] = $this->getParam( 'custid' );
+ 
+            if( $form->isValid( $_POST ) )
             {
-                $form->getElement( 'custid' )->addError( 'Invalid customer' );
-            }
-            else
-            {
-                $vi = new \Entities\VirtualInterface();
-                $form->assignFormToEntity( $vi, $this, false );
-                $vi->setCustomer( $cust );
-                $this->getD2EM()->persist( $vi );
-    
-                $pi = new \Entities\PhysicalInterface();
-                $form->assignFormToEntity( $pi, $this, false );
-                $pi->setVirtualInterface( $vi );
-                $pi->setSwitchPort(
-                    $this->getD2EM()->getRepository( '\\Entities\\SwitchPort' )->find( $form->getValue( 'switchportid' ) )
-                );
-                $pi->setMonitorindex(
-                    $this->getD2EM()->getRepository( '\\Entities\\PhysicalInterface' )->getNextMonitorIndex( $cust )
-                );
-                $this->getD2EM()->persist( $pi );
+                // check customer information
+                if( !( $cust = $this->getD2EM()->getRepository( '\\Entities\\Customer' )->find( $form->getValue( 'custid' ) ) ) )
+                {
+                    $form->getElement( 'custid' )->addError( 'Invalid customer' );
+                }
+                else
+                {
+                    $vi = new \Entities\VirtualInterface();
+                    $form->assignFormToEntity( $vi, $this, false );
+                    $vi->setCustomer( $cust );
+                    $this->getD2EM()->persist( $vi );
+        
+                    $pi = new \Entities\PhysicalInterface();
+                    $form->assignFormToEntity( $pi, $this, false );
+                    $pi->setVirtualInterface( $vi );
+                    
+                    $sp = $this->getD2R( '\\Entities\\SwitchPort' )->find( $form->getValue( 'switchportid' ) );
+                    $sp->setType( \Entities\SwitchPort::TYPE_PEERING );
+                    $pi->setSwitchPort( $sp );
+                    
+                    $pi->setMonitorindex(
+                        $this->getD2EM()->getRepository( '\\Entities\\PhysicalInterface' )->getNextMonitorIndex( $cust )
+                    );
+                    $this->getD2EM()->persist( $pi );
                 
-    
-                
-                $vli = new \Entities\VlanInterface();
-                $form->assignFormToEntity( $vli, $this, false );
-                $vli->setIPv4Address(
-                    $this->getD2EM()->getRepository( '\\Entities\\IPv4Address' )->find( $form->getElement( 'ipv4addressid' )->getValue() )
-                );
-                $vli->setIPv6Address(
-                    $this->getD2EM()->getRepository( '\\Entities\\IPv6Address' )->find( $form->getElement( 'ipv6addressid' )->getValue() )
-                );
-                $vli->setVlan(
-                    $this->getD2EM()->getRepository( '\\Entities\\Vlan' )->find( $form->getElement( 'vlanid' )->getValue() )
-                );
-                $vli->setVirtualInterface( $vi );
-                $this->getD2EM()->persist( $vli );
-                
-                $this->getD2EM()->flush();
-                
-                $this->getLogger()->info( 'New virtual, physical and VLAN interface created for ' . $cust->getName() );
-                $this->addMessage( "New interface created!", OSS_Message::SUCCESS );
-                
-                
-                if( $this->getParam( 'rtn', false ) == 'ov' )
-                    $this->_redirect( 'customer/view/id/' . $cust->getId() );
-                
-                $this->_redirect( 'virtual-interface/edit/id/' . $vi->getId() );
+                    if( $form->getElement( 'fanout' ) )
+                    {
+                        if( !$this->processFanoutPhysicalInterface( $form, $pi, $vi ) )
+                            return false;
+
+                        if( $pi->getRelatedInterface() )
+                        {
+                            $pi->getRelatedInterface()->setSpeed( $form->getValue( "speed" ) );
+                            $pi->getRelatedInterface()->setStatus( $form->getValue( "status" ) );
+                            $pi->getRelatedInterface()->setDuplex( $form->getValue( "duplex" ) );
+                        }
+                    }
+                    
+                    $vli = new \Entities\VlanInterface();
+                    $form->assignFormToEntity( $vli, $this, false );
+
+                    $vli->setVlan(
+                        $this->getD2EM()->getRepository( '\\Entities\\Vlan' )->find( $form->getElement( 'vlanid' )->getValue() )
+                    );
+
+                    if( !$this->setIp( $form, $vi, $vli, false ) || !$this->setIp( $form, $vi, $vli, true ) )
+                        return false;
+
+                    $vli->setVirtualInterface( $vi );
+                    $this->getD2EM()->persist( $vli );
+                    
+                    $this->getD2EM()->flush();
+                    
+                    $this->getLogger()->info( 'New virtual, physical and VLAN interface created for ' . $cust->getName() );
+                    $this->addMessage( "New interface created!", OSS_Message::SUCCESS );
+                    
+                    $this->redirect( 'customer/overview/tab/ports/id/' . $cust->getId() );
+                }
             }
         }
         
@@ -284,6 +346,5 @@ class VirtualInterfaceController extends INEX_Controller_FrontEnd
             $form->getElement( 'cancel' )->setAttrib( 'href', OSS_Utils::genUrl( 'virtual-interface', 'list' ) );
         }
     }
-        
 }
 

@@ -22,31 +22,86 @@
             </thead>
             <tbody>
                 {foreach from=$ctypes key=t item=c}
-                
+
                     <tr>
                         <td>{CUSTOMER::$CUST_TYPES_TEXT.$t}</td>
                         <td>{$c}</td>
                     </tr>
-                
+
                 {/foreach}
             </tbody>
-            
+
         </table>
     </div>
 
+    {if $multiIXP}
+        <br />
+        <h3>Customer Ports by IXP</h3>
+
+        <div class="row-fluid">
+            <table class="table table-bordered table-striped">
+                <thead>
+                    <tr>
+                        <th>IXP</th>
+
+                        {foreach from=$speeds key=k item=i}
+                            <th>{$k}</th>
+                        {/foreach}
+
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {assign var=colcount value=0}
+                    {foreach from=$byixp key=n item=spds}
+                        {assign var=rowcount value=0}
+
+                        <tr>
+                            <td>{$n}</td>
+                            {foreach from=$speeds key=k item=i}
+                                <td>
+                                    {if isset( $spds.$k )}
+                                        {$spds.$k}
+                                        {assign var=rowcount value=$rowcount+$spds.$k}
+                                        {else}
+                                        0
+                                    {/if}
+                                </td>
+                            {/foreach}
+                            <td>{$rowcount}</td>
+                        </tr>
+                        {assign var=colcount value=$rowcount+$colcount}
+
+                    {/foreach}
+
+                    <tr>
+                        <td><strong>Totals</strong></td>
+                        {foreach from=$speeds key=k item=i}
+                            <td>
+                                <strong>{$i}</strong>
+                            </td>
+                        {/foreach}
+                        <td><strong>{$colcount}</strong></td>
+                    </tr>
+                </tbody>
+
+            </table>
+        </div>
+    {/if}
+
     <br />
     <h3>Customer Ports by Location</h3>
-    
+
     <div class="row-fluid">
         <table class="table table-bordered table-striped">
             <thead>
                 <tr>
                     <th>Location</th>
-                    
+
                     {foreach from=$speeds key=k item=i}
                         <th>{$k}</th>
                     {/foreach}
-                    
+
                     <th>Total</th>
                 </tr>
             </thead>
@@ -54,7 +109,7 @@
                 {assign var=colcount value=0}
                 {foreach from=$bylocation key=n item=spds}
                     {assign var=rowcount value=0}
-                
+
                     <tr>
                         <td>{$n}</td>
                         {foreach from=$speeds key=k item=i}
@@ -70,9 +125,9 @@
                         <td>{$rowcount}</td>
                     </tr>
                     {assign var=colcount value=$rowcount+$colcount}
-                                        
+
                 {/foreach}
-                
+
                 <tr>
                     <td><strong>Totals</strong></td>
                     {foreach from=$speeds key=k item=i}
@@ -83,34 +138,34 @@
                     <td><strong>{$colcount}</strong></td>
                 </tr>
             </tbody>
-            
+
         </table>
     </div>
 
     <br />
     <h3>Customer Ports by Infrastructure</h3>
-    
+
     <div class="row-fluid">
         <table class="table  table-bordered table-striped">
             <thead>
                 <tr>
                     <th>Infrastructure</th>
-                    
+
                     {foreach from=$speeds key=k item=i}
                         <th>{$k}</th>
                     {/foreach}
-                    
+
                     <th>Total</th>
                 </tr>
             </thead>
             <tbody>
                 {assign var=colcount value=0}
                 {foreach from=$bylan key=n item=spds}
-                
+
                     {assign var=rowcount value=0}
-                
+
                     <tr>
-                        <td>LAN #{$n}</td>
+                        <td>{$n}</td>
                         {foreach from=$speeds key=k item=i}
                             <td>
                                 {if isset( $spds.$k )}
@@ -125,7 +180,7 @@
                     </tr>
                     {assign var=colcount value=$rowcount+$colcount}
                 {/foreach}
-                
+
                 <tr>
                     <td><strong>Totals</strong></td>
                     {foreach from=$speeds key=k item=i}
@@ -135,35 +190,47 @@
                     {/foreach}
                     <td><strong>{$colcount}</strong></td>
                 </tr>
-                
+
             </tbody>
-            
+
         </table>
     </div>
-    
+
 </div>
-
-
 
 <div class="span6">
 
-        {foreach from=$graphs key=k item=graph}
-            <div class="row-fluid">
-                <div class="well">
-                    <h3>{$graphs.$k}</h3>
+        {if isset( $graphs ) and count( $graphs )}
+            {foreach $graphs as $id => $data}
+                <div class="row-fluid">
+                    <div class="well">
+                        <h3>{$data.title}</h3>
 
-                    <p>
-                        {genMrtgGraphBox
-                            shortname='X_Peering'
-                            period='month'
-                            category='bits'
-                            values=$stats.$k
-                            graph=$k
-                        }
-                    </p>
+                        <p>
+                            {genMrtgGraphBox
+                                ixp=$id
+                                shortname='X_Peering'
+                                period='month'
+                                category='bits'
+                                values=$stats.$id
+                                graph=$data.name
+                            }
+                        </p>
+                    </div>
                 </div>
+            {/foreach}
+        {else}
+            <div class="row-fluid">
+               <div class="well">
+                   <h3>Configure Your Aggregate Graph(s)</h3>
+
+                   <p>
+                       Aggregate graphs have not been configured.
+                       Please see <a href="https://github.com/inex/IXP-Manager/wiki/MRTG---Traffic-Graphs">this documentation</a>.
+                   </p>
+               </div>
             </div>
-        {/foreach}
+        {/if}
 </div>
 </div>
 

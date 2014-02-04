@@ -26,45 +26,54 @@
  * Controller: Peering Matrices
  *
  * @author     Barry O'Donovan <barry@opensolutions.ie>
- * @category   INEX
- * @package    INEX_Controller
+ * @category   IXP
+ * @package    IXP_Controller
  * @copyright  Copyright (c) 2009 - 2012, Internet Neutral Exchange Association Ltd
  * @license    http://www.gnu.org/licenses/gpl-2.0.html GNU GPL V2.0
  */
-class PeeringMatrixController extends INEX_Controller_Action
+class PeeringMatrixController extends IXP_Controller_Action
 {
-
+    public function preDispatch()
+    {
+        if( isset( $this->_options['frontend']['disabled'][ $this->getRequest()->getControllerName() ] )
+                && $this->_options['frontend']['disabled'][ $this->getRequest()->getControllerName() ] )
+        {
+            $this->addMessage( _( 'This controller has been disabled.' ), OSS_Message::ERROR );
+            $this->redirect( '' );
+        }
+    }
+    
     public function indexAction()
     {
         $this->view->protos = array(
             4 => 'IPv4',
             6 => 'IPv6'
         );
-        
+
         $proto = $this->getParam( 'proto', 4 );
         if( !isset( $this->view->protos[$proto] ) || !in_array( $proto, $this->view->protos ) )
             $proto = 4;
 
         $this->view->vlans = $vlans = $this->getD2EM()->getRepository( '\\Entities\\Vlan' )->getNames();
-        
+
         $vid = $this->getParam( 'vid', $this->_options['identity']['vlans']['default'] );
         if( !isset( $vlans[ $vid ] ) )
             $vid = $this->_options['identity']['vlans']['default'];
-        
+
         $this->view->vid   = $vid;
         $this->view->proto = $proto;
-                
+
         $this->view->sessions = $this->getD2EM()->getRepository( '\\Entities\\BGPSessionData' )->getPeers( $vid, $proto );
         $this->view->custs    = $this->getD2EM()->getRepository( '\\Entities\\Vlan' )->getCustomers( $vid, $proto );
-        
+
         $this->view->jsessions = json_encode( $this->view->sessions );
         $this->view->jcusts    = json_encode( $this->view->custs );
-        
+
         $asns = array_keys( $this->view->custs );
         $maxLenOfASN = strlen( $asns[ count( $asns ) - 1 ] );
         $this->view->asnStringFormat = "% {$maxLenOfASN}s";
     }
-                 
+
 }
 
 

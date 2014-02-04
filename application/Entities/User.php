@@ -32,94 +32,88 @@ class User
     /**
      * @var string $username
      */
-    private $username;
+    protected $username;
 
     /**
      * @var string $password
      */
-    private $password;
+    protected $password;
 
     /**
      * @var string $email
      */
-    private $email;
+    protected $email;
 
     /**
      * @var string $authorisedMobile
      */
-    private $authorisedMobile;
+    protected $authorisedMobile;
 
     /**
      * @var integer $uid
      */
-    private $uid;
+    protected $uid;
 
     /**
      * @var integer $privs
      */
-    private $privs;
+    protected $privs;
 
     /**
      * @var boolean $disabled
      */
-    private $disabled;
+    protected $disabled;
 
     /**
      * @var \DateTime $lastupdated
      */
-    private $lastupdated;
+    protected $lastupdated;
 
     /**
      * @var integer $lastupdatedby
      */
-    private $lastupdatedby;
+    protected $lastupdatedby;
 
     /**
      * @var string $creator
      */
-    private $creator;
+    protected $creator;
 
     /**
      * @var \DateTime $created
      */
-    private $created;
+    protected $created;
 
     /**
      * @var integer $id
      */
-    private $id;
+    protected $id;
 
     /**
      * @var \Doctrine\Common\Collections\ArrayCollection
      */
-    private $Parent;
+    protected $Preferences;
 
     /**
      * @var \Doctrine\Common\Collections\ArrayCollection
      */
-    private $Preferences;
-
-    /**
-     * @var \Doctrine\Common\Collections\ArrayCollection
-     */
-    private $ChangeLogs;
+    protected $ChangeLogs;
 
     /**
      * @var Entities\Customer
      */
-    private $Customer;
+    protected $Customer;
 
     /**
      * @var Entities\User
      */
-    private $Children;
+    protected $Children;
 
     /**
      * Constructor
      */
     public function __construct()
     {
-        $this->Parent = new \Doctrine\Common\Collections\ArrayCollection();
         $this->Preferences = new \Doctrine\Common\Collections\ArrayCollection();
         $this->ChangeLogs = new \Doctrine\Common\Collections\ArrayCollection();
     }
@@ -388,39 +382,6 @@ class User
     }
 
     /**
-     * Add Parent
-     *
-     * @param Entities\User $parent
-     * @return User
-     */
-    public function addParent(\Entities\User $parent)
-    {
-        $this->Parent[] = $parent;
-    
-        return $this;
-    }
-
-    /**
-     * Remove Parent
-     *
-     * @param Entities\User $parent
-     */
-    public function removeParent(\Entities\User $parent)
-    {
-        $this->Parent->removeElement($parent);
-    }
-
-    /**
-     * Get Parent
-     *
-     * @return Doctrine\Common\Collections\Collection
-     */
-    public function getParent()
-    {
-        return $this->Parent;
-    }
-
-    /**
      * Add Preferences
      *
      * @param Entities\UserPreference $preferences
@@ -572,21 +533,9 @@ class User
     }
 
     /**
-     * Set Parent
-     *
-     * @param Entities\User $parent
-     * @return User
-     */
-    public function setParent(\Entities\User $parent = null)
-    {
-        $this->Parent = $parent;
-    
-        return $this;
-    }
-    /**
      * @var \Doctrine\Common\Collections\ArrayCollection
      */
-    private $Meetings;
+    protected $Meetings;
 
 
     /**
@@ -615,10 +564,115 @@ class User
     /**
      * Get Meetings
      *
-     * @return Doctrine\Common\Collections\Collection 
+     * @return Doctrine\Common\Collections\Collection
      */
     public function getMeetings()
     {
         return $this->Meetings;
+    }
+    /**
+     * @var \Entities\Contact
+     */
+    protected $Contact;
+
+
+    /**
+     * Set Contact
+     *
+     * @param \Entities\Contact $contact
+     * @return User
+     */
+    public function setContact(\Entities\Contact $contact = null)
+    {
+        $this->Contact = $contact;
+    
+        return $this;
+    }
+
+    /**
+     * Get Contact
+     *
+     * @return \Entities\Contact
+     */
+    public function getContact()
+    {
+        return $this->Contact;
+    }
+    
+    /**
+     * @var \Doctrine\Common\Collections\Collection
+     */
+    protected $LastLogins;
+
+
+    /**
+     * Add LastLogins
+     *
+     * @param \Entities\UserLoginHistory $lastLogins
+     * @return User
+     */
+    public function addLastLogin(\Entities\UserLoginHistory $lastLogins)
+    {
+        $this->LastLogins[] = $lastLogins;
+    
+        return $this;
+    }
+
+    /**
+     * Remove LastLogins
+     *
+     * @param \Entities\UserLoginHistory $lastLogins
+     */
+    public function removeLastLogin(\Entities\UserLoginHistory $lastLogins)
+    {
+        $this->LastLogins->removeElement($lastLogins);
+    }
+
+    /**
+     * Get LastLogins
+     *
+     * @return \Doctrine\Common\Collections\Collection 
+     */
+    public function getLastLogins()
+    {
+        return $this->LastLogins;
+    }
+    /**
+     * @var \Doctrine\Common\Collections\Collection
+     */
+    private $ApiKeys;
+
+
+    /**
+     * Add ApiKeys
+     *
+     * @param \Entities\ApiKey $apiKeys
+     * @return User
+     */
+    public function addApiKey(\Entities\ApiKey $apiKeys)
+    {
+        $this->ApiKeys[] = $apiKeys;
+    
+        return $this;
+    }
+
+    /**
+     * Remove ApiKeys
+     *
+     * @param \Entities\ApiKey $apiKeys
+     */
+    public function removeApiKey(\Entities\ApiKey $apiKeys)
+    {
+        $this->ApiKeys->removeElement($apiKeys);
+    }
+
+    /**
+     * Get ApiKeys
+     *
+     * @return \Doctrine\Common\Collections\Collection 
+     */
+    public function getApiKeys()
+    {
+        return $this->ApiKeys;
     }
 }

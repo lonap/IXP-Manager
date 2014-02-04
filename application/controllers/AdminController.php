@@ -26,12 +26,12 @@
  * Controller: Default controller for AUTH_SUPERUSER / admins
  *
  * @author     Barry O'Donovan <barry@opensolutions.ie>
- * @category   INEX
- * @package    INEX_Controller
+ * @category   IXP
+ * @package    IXP_Controller
  * @copyright  Copyright (c) 2009 - 2012, Internet Neutral Exchange Association Ltd
  * @license    http://www.gnu.org/licenses/gpl-2.0.html GNU GPL V2.0
  */
-class AdminController extends INEX_Controller_AuthRequiredAction
+class AdminController extends IXP_Controller_AuthRequiredAction
 {
 
     public function preDispatch()
@@ -53,7 +53,7 @@ class AdminController extends INEX_Controller_AuthRequiredAction
         $this->_dashboardStats();
     }
 
-    
+
     /**
      * Get public peering graphs
      *
@@ -69,25 +69,66 @@ class AdminController extends INEX_Controller_AuthRequiredAction
         else
         {
             $admin_home_stats = [];
-            
-            foreach( $this->_options['mrtg']['traffic_graphs'] as $g )
+            $graphs = [];
+            $stats  = [];
+
+            if( $this->multiIXP() )
             {
-                $p = explode( '::', $g );
-                $graphs[$p[0]] = $p[1];
-                $images[]      = $p[0];
-                
-                $mrtg = new INEX_Mrtg(
-                    $this->_options['mrtg']['path']
-                        . DIRECTORY_SEPARATOR . 'ixp_peering-' . $p[0]
-                        . '-' . INEX_Mrtg::CATEGORY_BITS . '.log'
-                );
-                
-                $stats[$p[0]] = $mrtg->getValues( INEX_Mrtg::PERIOD_MONTH, INEX_Mrtg::CATEGORY_BITS );
+                $ixps = $this->getD2R( '\\Entities\\IXP' )->findAll();
+
+                foreach( $ixps as $ixp )
+                {
+                    if( $ixp->getAggregateGraphName() )
+                    {
+                        $graphs[ $ixp->getId() ]['name']  = $ixp->getAggregateGraphName();
+                        $graphs[ $ixp->getId() ]['title'] = $ixp->getName();
+
+                        $mrtg = new IXP_Mrtg(
+                            $ixp->getMrtgPath() . DIRECTORY_SEPARATOR . 'ixp_peering-' . $ixp->getAggregateGraphName()
+                                . '-' . IXP_Mrtg::CATEGORY_BITS . '.log'
+                        );
+
+                        $stats[ $ixp->getId() ] = $mrtg->getValues( IXP_Mrtg::PERIOD_MONTH, IXP_Mrtg::CATEGORY_BITS );
+                    }
+                }
             }
-            
+            else
+            {
+                $ixp = $this->getD2R( '\\Entities\\IXP' )->getDefault();
+
+                if( $ixp->getAggregateGraphName() )
+                {
+                    $graphs[ $ixp->getId() ]['name']  = $ixp->getAggregateGraphName();
+                    $graphs[ $ixp->getId() ]['title'] = 'IXP Aggregate Graph';
+                    
+                    $mrtg = new IXP_Mrtg(
+                        $ixp->getMrtgPath() . DIRECTORY_SEPARATOR . 'ixp_peering-' . $ixp->getAggregateGraphName()
+                            . '-' . IXP_Mrtg::CATEGORY_BITS . '.log'
+                    );
+
+                    $stats[ $ixp->getId() ] = $mrtg->getValues( IXP_Mrtg::PERIOD_MONTH, IXP_Mrtg::CATEGORY_BITS );
+                }
+
+                foreach( $ixp->getInfrastructures() as $inf )
+                {
+                    if( $inf->getAggregateGraphName() )
+                    {
+                        $graphs[ $ixp->getId() . '-' . $inf->getId() ]['name']  = $inf->getAggregateGraphName();
+                        $graphs[ $ixp->getId() . '-' . $inf->getId() ]['title'] = $inf->getName();
+
+                        $mrtg = new IXP_Mrtg(
+                            $ixp->getMrtgPath() . DIRECTORY_SEPARATOR . 'ixp_peering-' . $inf->getAggregateGraphName()
+                                . '-' . IXP_Mrtg::CATEGORY_BITS . '.log'
+                        );
+
+                        $stats[ $ixp->getId() . '-' . $inf->getId() ] = $mrtg->getValues( IXP_Mrtg::PERIOD_MONTH, IXP_Mrtg::CATEGORY_BITS );
+                    }
+                }
+            }
+
             $admin_home_stats['graphs'] = $this->view->graphs     = $graphs;
             $admin_home_stats['stats']  = $this->view->stats      = $stats;
-            
+
             $this->getD2Cache()->save( 'admin_home_stats', $admin_home_stats, 300 );
         }
     }
@@ -102,50 +143,73 @@ class AdminController extends INEX_Controller_AuthRequiredAction
         if( !( $admin_home_ctypes = $this->getD2Cache()->fetch( 'admin_home_ctypes' ) ) )
         {
             $admin_home_ctypes['types'] = $this->getD2EM()->getRepository( 'Entities\\Customer' )->getTypeCounts();
-            
+
             $ints = $this->getD2EM()->getRepository( 'Entities\\VirtualInterface' )->getByLocation();
-            
-            $speeds = array();
-            $bylocation = array();
-            $bylan = array();
+
+            $speeds = [];
+            $bylocation = [];
+            $bylan = [];
+            $byixp = [];
+
             foreach( $ints as $int )
             {
-                if( !isset( $bylocation[ $int['locationname'] ] ) )
-                    $bylocation[ $int['locationname'] ] = array();
+                if( $this->multiIXP() )
+                {
+                    $locationname = sprintf( "%s - %s", $int['locixp'], $int['locationname'] );
+                    $infrastructure = sprintf( "%s - %s", $int['locixp'], $int['infrastructure'] );
+                }
+                else
+                {
+                    $locationname = $int['locationname'];
+                    $infrastructure = $int['infrastructure'];
+                }
 
-                if( !isset( $bylan[ $int['infrastructure'] ] ) )
-                    $bylan[ $int['infrastructure'] ] = array();
+                if( !isset( $bylocation[ $locationname ] ) )
+                    $bylocation[ $locationname ] = [];
+
+                if( !isset( $bylan[ $infrastructure ] ) )
+                    $bylan[ $infrastructure ] = [];
+
+                if( !isset( $byixp[ $int['ixp'] ] ) )
+                    $byixp[ $int['ixp'] ] = [];
 
                 if( !isset( $speeds[ $int['speed'] ] ) )
                     $speeds[ $int['speed'] ] = 1;
                 else
                     $speeds[ $int['speed'] ]++;
-                                    
-                if( !isset( $bylocation[ $int['locationname'] ][ $int['speed'] ] ) )
-                    $bylocation[ $int['locationname'] ][ $int['speed'] ] = 1;
-                else
-                    $bylocation[ $int['locationname'] ][ $int['speed'] ] = $bylocation[ $int['locationname'] ][ $int['speed'] ] + 1;
 
-                if( !isset( $bylan[ $int['infrastructure'] ][ $int['speed'] ] ) )
-                    $bylan[ $int['infrastructure'] ][ $int['speed'] ] = 1;
+                if( !isset( $bylocation[ $int['locationname'] ][ $int['speed'] ] ) )
+                    $bylocation[ $locationname ][ $int['speed'] ] = 1;
                 else
-                    $bylan[ $int['infrastructure'] ][ $int['speed'] ] = $bylan[ $int['infrastructure'] ][ $int['speed'] ] + 1;
+                    $bylocation[ $locationname ][ $int['speed'] ]++;
+
+                if( !isset( $byixp[ $int['ixp'] ][ $int['speed'] ] ) )
+                    $byixp[ $int['ixp'] ][ $int['speed'] ] = 1;
+                else
+                    $byixp[ $int['ixp'] ][ $int['speed'] ]++;
+
+                if( !isset( $bylan[ $infrastructure ][ $int['speed'] ] ) )
+                    $bylan[ $infrastructure ][ $int['speed'] ] = 1;
+                else
+                    $bylan[ $infrastructure ][ $int['speed'] ]++;
             }
-            
+
             ksort( $speeds, SORT_NUMERIC );
             $this->view->speeds      = $admin_home_ctypes['speeds']      = $speeds;
             $this->view->bylocation  = $admin_home_ctypes['bylocation']  = $bylocation;
             $this->view->bylan       = $admin_home_ctypes['bylan']       = $bylan;
-            
+            $this->view->byixp       = $admin_home_ctypes['byixp']       = $byixp;
+
             $this->getD2Cache()->save( 'admin_home_ctypes', $admin_home_ctypes, 3600 );
         }
-        
+
         $this->view->ctypes      = $admin_home_ctypes['types'];
         $this->view->speeds      = $admin_home_ctypes['speeds'];
         $this->view->bylocation  = $admin_home_ctypes['bylocation'];
         $this->view->bylan       = $admin_home_ctypes['bylan'];
+        $this->view->byixp       = $admin_home_ctypes['byixp'];
     }
-    
+
     public function staticAction()
     {
         $page = $this->_request->getParam( 'page', null );
@@ -161,11 +225,8 @@ class AdminController extends INEX_Controller_AuthRequiredAction
         }
         else
         {
-            $this->session->message = new INEX_Message(
-                "The requested page was not found.",
-                INEX_Message::MESSAGE_TYPE_ERROR
-            );
-            $this->_redirect( 'index' );
+            $this->addMessage( "The requested page was not found.", OSS_Message::ERROR );
+            $this->redirect( 'index' );
         }
     }
 }

@@ -12,27 +12,27 @@ class IRRDBConfig
     /**
      * @var string $host
      */
-    private $host;
+    protected $host;
 
     /**
      * @var string $protocol
      */
-    private $protocol;
+    protected $protocol;
 
     /**
      * @var string $source
      */
-    private $source;
+    protected $source;
 
     /**
      * @var string $notes
      */
-    private $notes;
+    protected $notes;
 
     /**
      * @var integer $id
      */
-    private $id;
+    protected $id;
 
 
     /**
@@ -135,5 +135,50 @@ class IRRDBConfig
     public function getId()
     {
         return $this->id;
+    }
+    /**
+     * @var \Doctrine\Common\Collections\Collection
+     */
+    protected $Customers;
+
+    /**
+     * Constructor
+     */
+    public function __construct()
+    {
+        $this->Customers = new \Doctrine\Common\Collections\ArrayCollection();
+    }
+    
+    /**
+     * Add Customers
+     *
+     * @param \Entities\Customer $customers
+     * @return IRRDBConfig
+     */
+    public function addCustomer(\Entities\Customer $customers)
+    {
+        $this->Customers[] = $customers;
+    
+        return $this;
+    }
+
+    /**
+     * Remove Customers
+     *
+     * @param \Entities\Customer $customers
+     */
+    public function removeCustomer(\Entities\Customer $customers)
+    {
+        $this->Customers->removeElement($customers);
+    }
+
+    /**
+     * Get Customers
+     *
+     * @return \Doctrine\Common\Collections\Collection 
+     */
+    public function getCustomers()
+    {
+        return $this->Customers;
     }
 }

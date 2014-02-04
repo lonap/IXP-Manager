@@ -18,12 +18,12 @@
                 <br /><br /><br /><br />
             </p>
     {else}
-        <div class="span6 offset4">
+        <div class="span12">
             <p align="center">
                 <img src="{$options.identity.biglogo}" />
             </p>
     {/if}
-    </div>
+        </div>
     
 </div>
 
@@ -38,5 +38,11 @@
 </p>
 
 </div>
+
+<script type="text/javascript">
+    $( document ).ready( function(){
+        $('#username').focus();
+    });
+</script>
 
 {tmplinclude file="footer.phtml"}

@@ -27,8 +27,8 @@ require_once APPLICATION_PATH . '/controllers/Ipv4AddressController.php';
  * Controller: Manage IPv6 addresses
  *
  * @author     Barry O'Donovan <barry@opensolutions.ie>
- * @category   INEX
- * @package    INEX_Controller
+ * @category   IXP
+ * @package    IXP_Controller
  * @copyright  Copyright (c) 2009 - 2012, Internet Neutral Exchange Association Ltd
  * @license    http://www.gnu.org/licenses/gpl-2.0.html GNU GPL V2.0
  */
@@ -50,6 +50,35 @@ class Ipv6AddressController extends Ipv4AddressController
     public function addAction()
     {
         $this->forward( 'add', 'ipv4-address' );
+    }
+
+    public function ajaxGetNextAction()
+    {
+        $schema = ["LONAP" => "2001:7f8:17::%asn:%rtr"];
+        $cust = $this->getD2R( "\\Entities\\Customer" )->find( $this->getParam('custid', 0 ) );
+
+        if( !isset( $schema[ $this->getParam('schema', "" ) ] ) || !$cust )
+            return false;
+        
+
+        $asn = dechex( $cust->getAutsys() );
+        $ipv6s = $this->getD2R( "\\Entities\\IPv6Address" )->getArrayForCustomer( $cust );
+
+        $rtr = 0;
+        foreach( $ipv6s as $ip )
+        {
+            if( !strrpos( $ip, ':' ) )
+                continue;
+            
+            $end = substr( $ip, strrpos( $ip, ':' ) );
+            $end = hexdec( $end );
+            if( $end > $rtr )
+                $rtr = $end;
+        }
+        $rtr = dechex( $rtr + 1 );
+        $ipv6 = str_replace( '%asn', $asn, $schema[ $this->getParam('schema', "" ) ] );
+        $ipv6 = str_replace( '%rtr', $rtr, $ipv6 );
+        echo $ipv6;
     }
 }
 

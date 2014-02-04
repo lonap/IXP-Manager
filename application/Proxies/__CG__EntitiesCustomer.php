@@ -126,18 +126,6 @@ class Customer extends \Entities\Customer implements \Doctrine\ORM\Proxy\Proxy
         return parent::getNocphone();
     }
 
-    public function setNoc24hrphone($noc24hrphone)
-    {
-        $this->__load();
-        return parent::setNoc24hrphone($noc24hrphone);
-    }
-
-    public function getNoc24hrphone()
-    {
-        $this->__load();
-        return parent::getNoc24hrphone();
-    }
-
     public function setNocfax($nocfax)
     {
         $this->__load();
@@ -186,18 +174,6 @@ class Customer extends \Entities\Customer implements \Doctrine\ORM\Proxy\Proxy
         return parent::getNocwww();
     }
 
-    public function setIrrdb($irrdb)
-    {
-        $this->__load();
-        return parent::setIrrdb($irrdb);
-    }
-
-    public function getIrrdb()
-    {
-        $this->__load();
-        return parent::getIrrdb();
-    }
-
     public function setPeeringmacro($peeringmacro)
     {
         $this->__load();
@@ -220,66 +196,6 @@ class Customer extends \Entities\Customer implements \Doctrine\ORM\Proxy\Proxy
     {
         $this->__load();
         return parent::getPeeringpolicy();
-    }
-
-    public function setBillingContact($billingContact)
-    {
-        $this->__load();
-        return parent::setBillingContact($billingContact);
-    }
-
-    public function getBillingContact()
-    {
-        $this->__load();
-        return parent::getBillingContact();
-    }
-
-    public function setBillingAddress1($billingAddress1)
-    {
-        $this->__load();
-        return parent::setBillingAddress1($billingAddress1);
-    }
-
-    public function getBillingAddress1()
-    {
-        $this->__load();
-        return parent::getBillingAddress1();
-    }
-
-    public function setBillingAddress2($billingAddress2)
-    {
-        $this->__load();
-        return parent::setBillingAddress2($billingAddress2);
-    }
-
-    public function getBillingAddress2()
-    {
-        $this->__load();
-        return parent::getBillingAddress2();
-    }
-
-    public function setBillingCity($billingCity)
-    {
-        $this->__load();
-        return parent::setBillingCity($billingCity);
-    }
-
-    public function getBillingCity()
-    {
-        $this->__load();
-        return parent::getBillingCity();
-    }
-
-    public function setBillingCountry($billingCountry)
-    {
-        $this->__load();
-        return parent::setBillingCountry($billingCountry);
-    }
-
-    public function getBillingCountry()
-    {
-        $this->__load();
-        return parent::getBillingCountry();
     }
 
     public function setCorpwww($corpwww)
@@ -340,18 +256,6 @@ class Customer extends \Entities\Customer implements \Doctrine\ORM\Proxy\Proxy
     {
         $this->__load();
         return parent::getActivepeeringmatrix();
-    }
-
-    public function setNotes($notes)
-    {
-        $this->__load();
-        return parent::setNotes($notes);
-    }
-
-    public function getNotes()
-    {
-        $this->__load();
-        return parent::getNotes();
     }
 
     public function setLastupdated($lastupdated)
@@ -555,24 +459,6 @@ class Customer extends \Entities\Customer implements \Doctrine\ORM\Proxy\Proxy
         return parent::getYCusts();
     }
 
-    public function addRSDroppedPrefixe(\Entities\RSDroppedPrefix $rSDroppedPrefixes)
-    {
-        $this->__load();
-        return parent::addRSDroppedPrefixe($rSDroppedPrefixes);
-    }
-
-    public function removeRSDroppedPrefixe(\Entities\RSDroppedPrefix $rSDroppedPrefixes)
-    {
-        $this->__load();
-        return parent::removeRSDroppedPrefixe($rSDroppedPrefixes);
-    }
-
-    public function getRSDroppedPrefixes()
-    {
-        $this->__load();
-        return parent::getRSDroppedPrefixes();
-    }
-
     public function addUser(\Entities\User $users)
     {
         $this->__load();
@@ -711,10 +597,292 @@ class Customer extends \Entities\Customer implements \Doctrine\ORM\Proxy\Proxy
         return parent::isTypeProBono();
     }
 
+    public function hasPrivateVLANs()
+    {
+        $this->__load();
+        return parent::hasPrivateVLANs();
+    }
+
+    public function getPrivateVlanDetails()
+    {
+        $this->__load();
+        return parent::getPrivateVlanDetails();
+    }
+
+    public function addRSPrefixes(\Entities\RSPrefix $rSPrefixes)
+    {
+        $this->__load();
+        return parent::addRSPrefixes($rSPrefixes);
+    }
+
+    public function removeRSPrefixes(\Entities\RSPrefix $rSPrefixes)
+    {
+        $this->__load();
+        return parent::removeRSPrefixes($rSPrefixes);
+    }
+
+    public function getRSPrefixes()
+    {
+        $this->__load();
+        return parent::getRSPrefixes();
+    }
+
+    public function isRouteServerClient($proto = 4)
+    {
+        $this->__load();
+        return parent::isRouteServerClient($proto);
+    }
+
+    public function isAS112Client()
+    {
+        $this->__load();
+        return parent::isAS112Client();
+    }
+
+    public function setIRRDB(\Entities\IRRDBConfig $iRRDB = NULL)
+    {
+        $this->__load();
+        return parent::setIRRDB($iRRDB);
+    }
+
+    public function getIRRDB()
+    {
+        $this->__load();
+        return parent::getIRRDB();
+    }
+
+    public function setPeeringDb($peeringDb)
+    {
+        $this->__load();
+        return parent::setPeeringDb($peeringDb);
+    }
+
+    public function getPeeringDb()
+    {
+        $this->__load();
+        return parent::getPeeringDb();
+    }
+
+    public function addNote(\Entities\CustomerNote $notes)
+    {
+        $this->__load();
+        return parent::addNote($notes);
+    }
+
+    public function removeNote(\Entities\CustomerNote $notes)
+    {
+        $this->__load();
+        return parent::removeNote($notes);
+    }
+
+    public function getNotes()
+    {
+        $this->__load();
+        return parent::getNotes();
+    }
+
+    public function setPeeringmacrov6($peeringmacrov6)
+    {
+        $this->__load();
+        return parent::setPeeringmacrov6($peeringmacrov6);
+    }
+
+    public function getPeeringmacrov6()
+    {
+        $this->__load();
+        return parent::getPeeringmacrov6();
+    }
+
+    public function setRegistrationDetails(\Entities\CompanyRegisteredDetail $registrationDetails)
+    {
+        $this->__load();
+        return parent::setRegistrationDetails($registrationDetails);
+    }
+
+    public function getRegistrationDetails()
+    {
+        $this->__load();
+        return parent::getRegistrationDetails();
+    }
+
+    public function setBillingDetails(\Entities\CompanyBillingDetail $billingDetails)
+    {
+        $this->__load();
+        return parent::setBillingDetails($billingDetails);
+    }
+
+    public function getBillingDetails()
+    {
+        $this->__load();
+        return parent::getBillingDetails();
+    }
+
+    public function setAbbreviatedName($abbreviatedName)
+    {
+        $this->__load();
+        return parent::setAbbreviatedName($abbreviatedName);
+    }
+
+    public function getAbbreviatedName()
+    {
+        $this->__load();
+        return parent::getAbbreviatedName();
+    }
+
+    public function setMD5Support($mD5Support)
+    {
+        $this->__load();
+        return parent::setMD5Support($mD5Support);
+    }
+
+    public function getMD5Support()
+    {
+        $this->__load();
+        return parent::getMD5Support();
+    }
+
+    public function setIsReseller($isReseller)
+    {
+        $this->__load();
+        return parent::setIsReseller($isReseller);
+    }
+
+    public function getIsReseller()
+    {
+        $this->__load();
+        return parent::getIsReseller();
+    }
+
+    public function isReseller()
+    {
+        $this->__load();
+        return parent::isReseller();
+    }
+
+    public function isResoldCustomer()
+    {
+        $this->__load();
+        return parent::isResoldCustomer();
+    }
+
+    public function addResoldCustomer(\Entities\Customer $resoldCustomers)
+    {
+        $this->__load();
+        return parent::addResoldCustomer($resoldCustomers);
+    }
+
+    public function removeResoldCustomer(\Entities\Customer $resoldCustomers)
+    {
+        $this->__load();
+        return parent::removeResoldCustomer($resoldCustomers);
+    }
+
+    public function getResoldCustomers()
+    {
+        $this->__load();
+        return parent::getResoldCustomers();
+    }
+
+    public function setReseller(\Entities\Customer $reseller = NULL)
+    {
+        $this->__load();
+        return parent::setReseller($reseller);
+    }
+
+    public function getReseller()
+    {
+        $this->__load();
+        return parent::getReseller();
+    }
+
+    public function addIXP(\Entities\IXP $iXPs)
+    {
+        $this->__load();
+        return parent::addIXP($iXPs);
+    }
+
+    public function removeIXP(\Entities\IXP $iXPs)
+    {
+        $this->__load();
+        return parent::removeIXP($iXPs);
+    }
+
+    public function getIXPs()
+    {
+        $this->__load();
+        return parent::getIXPs();
+    }
+
+    public function addIrrdbPrefixes(\Entities\IrrdbPrefix $irrdbPrefixes)
+    {
+        $this->__load();
+        return parent::addIrrdbPrefixes($irrdbPrefixes);
+    }
+
+    public function removeIrrdbPrefixes(\Entities\IrrdbPrefix $irrdbPrefixes)
+    {
+        $this->__load();
+        return parent::removeIrrdbPrefixes($irrdbPrefixes);
+    }
+
+    public function getIrrdbPrefixes($proto = false)
+    {
+        $this->__load();
+        return parent::getIrrdbPrefixes($proto);
+    }
+
+    public function resolveAsMacro($protocol = 4, $asnPrefix = '')
+    {
+        $this->__load();
+        return parent::resolveAsMacro($protocol, $asnPrefix);
+    }
+
+    public function addIrrdbPrefixe(\Entities\IrrdbPrefix $irrdbPrefixes)
+    {
+        $this->__load();
+        return parent::addIrrdbPrefixe($irrdbPrefixes);
+    }
+
+    public function removeIrrdbPrefixe(\Entities\IrrdbPrefix $irrdbPrefixes)
+    {
+        $this->__load();
+        return parent::removeIrrdbPrefixe($irrdbPrefixes);
+    }
+
+    public function addRSPrefixe(\Entities\RSPrefix $rSPrefixes)
+    {
+        $this->__load();
+        return parent::addRSPrefixe($rSPrefixes);
+    }
+
+    public function removeRSPrefixe(\Entities\RSPrefix $rSPrefixes)
+    {
+        $this->__load();
+        return parent::removeRSPrefixe($rSPrefixes);
+    }
+
+    public function addIrrdbASN(\Entities\IrrdbAsn $irrdbASNs)
+    {
+        $this->__load();
+        return parent::addIrrdbASN($irrdbASNs);
+    }
+
+    public function removeIrrdbASN(\Entities\IrrdbAsn $irrdbASNs)
+    {
+        $this->__load();
+        return parent::removeIrrdbASN($irrdbASNs);
+    }
+
+    public function getIrrdbASNs()
+    {
+        $this->__load();
+        return parent::getIrrdbASNs();
+    }
+
 
     public function __sleep()
     {
-        return array('__isInitialized__', 'name', 'type', 'shortname', 'autsys', 'maxprefixes', 'peeringemail', 'nocphone', 'noc24hphone', 'nocfax', 'nocemail', 'nochours', 'nocwww', 'irrdb', 'peeringmacro', 'peeringpolicy', 'billingContact', 'billingAddress1', 'billingAddress2', 'billingCity', 'billingCountry', 'corpwww', 'datejoin', 'dateleave', 'status', 'activepeeringmatrix', 'notes', 'lastupdated', 'lastupdatedby', 'creator', 'created', 'id', 'VirtualInterfaces', 'Contacts', 'ConsoleServerConnections', 'CustomerEquipment', 'Peers', 'PeersWith', 'XCusts', 'YCusts', 'RSDroppedPrefixes', 'Users', 'Traffic95ths', 'Traffic95thMonthlys', 'TrafficDailies', 'SecEvents');
+        return array('__isInitialized__', 'name', 'type', 'shortname', 'abbreviatedName', 'autsys', 'maxprefixes', 'peeringemail', 'nocphone', 'noc24hphone', 'nocfax', 'nocemail', 'nochours', 'nocwww', 'peeringmacro', 'peeringmacrov6', 'peeringpolicy', 'corpwww', 'datejoin', 'dateleave', 'status', 'activepeeringmatrix', 'peeringDb', 'lastupdated', 'lastupdatedby', 'creator', 'created', 'MD5Support', 'isReseller', 'id', 'IrrdbASNs', 'IrrdbPrefixes', 'Notes', 'VirtualInterfaces', 'ResoldCustomers', 'Contacts', 'ConsoleServerConnections', 'CustomerEquipment', 'Peers', 'PeersWith', 'XCusts', 'YCusts', 'RSPrefixes', 'Users', 'Traffic95ths', 'Traffic95thMonthlys', 'TrafficDailies', 'SecEvents', 'IRRDB', 'RegistrationDetails', 'BillingDetails', 'Reseller', 'IXPs');
     }
 
     public function __clone()

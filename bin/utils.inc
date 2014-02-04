@@ -1,7 +1,7 @@
 <?php
 
 /*
- * Copyright (C) 2009-2011 Internet Neutral Exchange Association Limited.
+ * Copyright (C) 2009-2014 Internet Neutral Exchange Association Limited.
  * All Rights Reserved.
  * 
  * This file is part of IXP Manager.
@@ -22,7 +22,7 @@
  */
 
 // load version information
-require_once( dirname( __FILE__ ) . '/../library/INEX/Version.php' );    
+require_once( dirname( __FILE__ ) . '/../library/IXP/Version.php' );    
 
 /**
  * Parses public/.htaccess for application environment
@@ -41,7 +41,7 @@ function scriptutils_get_application_env()
     $htaccess = file_get_contents( $htaccess_path );
 
     $matches = array();
-    preg_match_all( '/SetEnv\s+APPLICATION_ENV\s+(\w+)/i', $htaccess, $matches );
+    preg_match_all( '/SetEnv\s+APPLICATION_ENV\s+([a-zA-Z0-9_\-\.]+)/i', $htaccess, $matches );
 
     if( isset( $matches[1][0] ) && strlen( $matches[1][0] ) )
         return trim( $matches[1][0] );
@@ -49,8 +49,20 @@ function scriptutils_get_application_env()
     die( "ERROR: Could not parse or find APPLICATION_ENV in $htaccess_path\n" );
 }
 
+function scriptutils_get_config() 
+{
+	static $config = NULL;
+	static $environment = NULL;
 
+	if ($environment == null) {
+		$inifile = dirname( __FILE__ ) . '/../application/configs/application.ini';
 
+		$environment = scriptutils_get_application_env();
+	}
 
-    
+	if ($config == null) {
+		$config = parse_ini_file ($inifile, true);
+	}
 
+	return isset ($config[$environment]) ? $config[$environment] : NULL;
+}

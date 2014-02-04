@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <doctrine-mapping xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping" xsi="http://www.w3.org/2001/XMLSchema-instance" schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
-  <entity name="Entities\PhysicalInterface" table="physicalinterface" repository-class="Repositories\PhysicalInterface" tableName="physicalinterface">
+  <entity name="Entities\PhysicalInterface" repository-class="Repositories\PhysicalInterface" table="physicalinterface" tableName="physicalinterface">
     <id name="id" type="integer">
       <generator strategy="AUTO"/>
     </id>
@@ -19,5 +19,11 @@
         <join-column name="virtualinterfaceid" referenced-column-name="id"/>
       </join-columns>
     </many-to-one>
+    <one-to-one field="FanoutPhysicalInterface" target-entity="Entities\PhysicalInterface" inversed-by="PeeringPhysicalInterface">
+      <join-columns>
+        <join-column name="fanout_physical_interface_id" referenced-column-name="id" unique="true"/>
+      </join-columns>
+    </one-to-one>
+    <one-to-one field="PeeringPhysicalInterface" target-entity="Entities\PhysicalInterface" mapped-by="FanoutPhysicalInterface"/>
   </entity>
 </doctrine-mapping>

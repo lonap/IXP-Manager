@@ -35,7 +35,7 @@ class User extends EntityRepository
     {
         $q = $this->getEntityManager()->createQuery(
                 "SELECT up.attribute AS attribute, up.value AS lastlogin, u.username AS username,
-                        u.email AS email, c.name AS cust_name, c.id AS cust_id
+                        u.email AS email, c.name AS cust_name, c.id AS cust_id, u.id AS user_id
                     FROM \\Entities\\UserPreference up
                         JOIN up.User u
                         JOIN u.Customer c
@@ -70,4 +70,51 @@ class User extends EntityRepository
             ->setParameter( 2, $subscribed )
             ->getScalarResult();
     }
+    
+    
+    /**
+     * Find all (active) users and arranged them in arrays by the privileges.
+     *
+     * Returns an array of the form:
+     *
+     *     [
+     *         [3] => [
+     *                    [0] => [
+     *                               [username] => joe
+     *                               [email] => joe@example.com
+     *                               [password] => soopersecret
+     *                               [privs] => 3
+     *                               [custname] => SOME_IXP
+     *                           ],
+     *                    ...
+     *                ],
+     *         [2] => [
+     *                    ...
+     *                ],
+     *         [1] => [
+     *                    ...
+     *                ]
+     *     ]
+     *
+     * @return array As defined above
+     */
+    public function arrangeByType()
+    {
+        $users = $this->getEntityManager()->createQuery(
+                "SELECT u.username AS username, u.email AS email, u.password AS password, u.privs AS privs,
+                        c.name AS custname
+                FROM \\Entities\\User u
+                    Join u.Customer c
+                WHERE
+                    u.disabled = 0
+                ORDER BY u.privs DESC, u.username ASC"
+            )->getArrayResult();
+
+        $arranged = [];
+        foreach( $users as $u )
+            $arranged[ $u['privs'] ][] = $u;
+        
+        return $arranged;
+    }
+    
 }

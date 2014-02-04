@@ -26,12 +26,12 @@
  * Controller: Authentication controller
  *
  * @author     Barry O'Donovan <barry@opensolutions.ie>
- * @category   INEX
- * @package    INEX_Controller
+ * @category   IXP
+ * @package    IXP_Controller
  * @copyright  Copyright (c) 2009 - 2012, Internet Neutral Exchange Association Ltd
  * @license    http://www.gnu.org/licenses/gpl-2.0.html GNU GPL V2.0
  */
-class AuthController extends INEX_Controller_Action
+class AuthController extends IXP_Controller_Action
 {
     use OSS_Controller_Trait_Auth;
 
@@ -40,7 +40,7 @@ class AuthController extends INEX_Controller_Action
      */
     protected function _getFormLogin()
     {
-        return new INEX_Form_Auth_Login();
+        return new IXP_Form_Auth_Login();
     }
 
     /**
@@ -48,7 +48,7 @@ class AuthController extends INEX_Controller_Action
      */
     protected function _getFormLostPassword()
     {
-        return new INEX_Form_Auth_LostPassword();
+        return new IXP_Form_Auth_LostPassword();
     }
 
     /**
@@ -56,7 +56,7 @@ class AuthController extends INEX_Controller_Action
      */
     protected function _getFormResetPassword()
     {
-        return new INEX_Form_Auth_ResetPassword();
+        return new IXP_Form_Auth_ResetPassword();
     }
     
     /**
@@ -64,18 +64,21 @@ class AuthController extends INEX_Controller_Action
      */
     protected function _getFormLostUsername()
     {
-        return new INEX_Form_Auth_LostUsername();
+        return new IXP_Form_Auth_LostUsername();
     }
     
     
     
     
     /**
-     * Create a Drupal login button for admin users
+     * Create a CMS login button for admin users
+     * 
+     * The default template is a working bersion for Drupal. Copy that template and skin for your own.
      */
-    protected function drupalLoginAction()
+    protected function cmsLoginAction()
     {
-        // let's be clear - you have to be an INEX member to access this!
+        // let's be clear - you have to be a superuser to access this!
+        // (or at least at INEX, only super users can access this)
         if( !$this->getAuth()->hasIdentity() || $this->getUser()->getPrivs() != \Entities\User::AUTH_SUPERUSER )
             $this->redirectAndEnsureDie( 'error/insufficient-privileges' );
     }
@@ -130,7 +133,7 @@ class AuthController extends INEX_Controller_Action
         // record current user customer ID
         $custid = $this->getUser()->custid;
         
-        $params['url'] = 'customer/overview/id/' . $subUser->getCustomer()->getId();
+        $params['url'] = 'customer/overview/tab/users/id/' . $subUser->getCustomer()->getId();
         
         return $params;
     }

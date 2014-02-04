@@ -26,12 +26,12 @@
  * Controller: Manage users
  *
  * @author     Barry O'Donovan <barry@opensolutions.ie>
- * @category   INEX
- * @package    INEX_Controller
+ * @category   IXP
+ * @package    IXP_Controller
  * @copyright  Copyright (c) 2009 - 2012, Internet Neutral Exchange Association Ltd
  * @license    http://www.gnu.org/licenses/gpl-2.0.html GNU GPL V2.0
  */
-class UserController extends INEX_Controller_FrontEnd
+class UserController extends IXP_Controller_FrontEnd
 {
 
     /**
@@ -41,7 +41,7 @@ class UserController extends INEX_Controller_FrontEnd
     {
         $this->view->feParams = $this->_feParams = (object)[
             'entity'        => '\\Entities\\User',
-            'form'          => 'INEX_Form_User',
+            'form'          => 'IXP_Form_User',
             'pagetitle'     => 'Users',
 
             'titleSingular' => 'User',
@@ -51,6 +51,8 @@ class UserController extends INEX_Controller_FrontEnd
 
             'listOrderBy'    => 'username',
             'listOrderByDir' => 'ASC',
+            
+            'addWhenEmpty'   => false
         ];
 
         switch( $this->getUser()->getPrivs() )
@@ -67,7 +69,7 @@ class UserController extends INEX_Controller_FrontEnd
                         'idField'    => 'custid'
                     ],
 
-                    'username'      => 'Userame',
+                    'username'      => 'Username',
                     'email'         => 'Email',
                     
                     'privileges'    => [
@@ -85,6 +87,11 @@ class UserController extends INEX_Controller_FrontEnd
                     'created'       => [
                         'title'     => 'Created',
                         'type'      => self::$FE_COL_TYPES[ 'DATETIME' ]
+                    ],
+
+                    'lastupdated'   => [
+                        'title'     => 'Updated',
+                        'type'      => self::$FE_COL_TYPES[ 'DATETIME' ]
                     ]
                 ];
                 break;
@@ -94,7 +101,7 @@ class UserController extends INEX_Controller_FrontEnd
 
                 $this->_feParams->listColumns = [
                     'id' => [ 'title' => 'UID', 'display' => false ],
-                    'username'      => 'Userame',
+                    'username'      => 'Username',
                     'email'         => 'Email',
 
                     'enabled'       => [
@@ -119,26 +126,18 @@ class UserController extends INEX_Controller_FrontEnd
     }
 
     
-    
-    protected function listPreamble()
+    public function addAction()
     {
-        if( $this->getUser()->getPrivs() == \Entities\User::AUTH_CUSTADMIN )
-        {
-            if( !isset( $this->getSessionNamespace()->custadminInstructions ) || !$this->getSessionNamespace()->custadminInstructions )
-            {
-                $this->getSessionNamespace()->custadminInstructions = true;
-                
-                $this->addMessage(
-                    "<p><strong>Remember! This admin account is only intended for creating users for your organisation.</strong></p>"
-                        . "<p>For full IXP Manager functionality, graphs and member information, log in under one of your user accounts</p>",
-                    OSS_Message::INFO,
-                    OSS_Message::TYPE_BLOCK
-                );
-            }
-        }
+        $this->redirect( 'contact/add' );
     }
-        
-
+    
+    public function deleteAction()
+    {
+        // disabled as it is handled by the contact controller
+        $this->redirect( 'user/list' );
+    }
+    
+    
 
     /**
      * Provide array of users for the listAction and viewAction
@@ -149,9 +148,11 @@ class UserController extends INEX_Controller_FrontEnd
     {
         $qb = $this->getD2EM()->createQueryBuilder()
             ->select( 'u.id as id, u.username as username, u.email as email, u.privs AS privileges,
-                    u.created as created, u.disabled as disabled, c.id as custid, c.name as customer' )
+                    u.created as created, u.disabled as disabled, c.id as custid, c.name as customer,
+                    u.lastupdated AS lastupdated, contact.id AS contactid' )
             ->from( '\\Entities\\User', 'u' )
-            ->leftJoin( 'u.Customer', 'c' );
+            ->leftJoin( 'u.Customer', 'c' )
+            ->leftJoin( 'u.Contact', 'contact' );
 
         if( $this->getUser()->getPrivs() == \Entities\User::AUTH_CUSTADMIN )
         {
@@ -170,199 +171,6 @@ class UserController extends INEX_Controller_FrontEnd
         return $qb->getQuery()->getResult();
     }
 
-
-    /**
-     *
-     * @param INEX_Form_User $form The form object
-     * @param \Entities\User $object The Doctrine2 entity (being edited or blank for add)
-     * @param bool $isEdit True of we are editing an object, false otherwise
-     * @param array $options Options passed onto Zend_Form
-     * @param string $cancelLocation Where to redirect to if 'Cancal' is clicked
-     * @return void
-     */
-    protected function formPostProcess( $form, $object, $isEdit, $options = null, $cancelLocation = null )
-    {
-        switch( $this->getUser()->getPrivs() )
-        {
-            case \Entities\User::AUTH_SUPERUSER:
-                $form->removeElement( 'name' );
-                $form->getElement( 'username' )->removeValidator( 'stringLength' );
-                if( !$isEdit && !$this->getRequest()->isPost() )
-                    $form->getElement( 'password' )->setValue( OSS_String::random( 12 ) );
-                if( $isEdit )
-                    $form->getElement( 'custid' )->setValue( $object->getCustomer()->getId() );
-                break;
-
-            case \Entities\User::AUTH_CUSTADMIN:
-                $form->removeElement( 'password' );
-                $form->removeElement( 'privs' );
-                $form->removeElement( 'custid' );
-                if( $isEdit )
-                {
-                    $form->removeElement( 'name' );
-                    $form->getElement( 'username' )->setAttrib( 'readonly', 'readonly' );
-                }
-                break;
-
-            default:
-                throw new OSS_Exception( 'Unhandled user type' );
-        }
-
-        if( !$isEdit )
-        {
-            $form->getElement( 'username' )->addValidator( 'OSSDoctrine2Uniqueness', true,
-                [ 'entity' => '\\Entities\\User', 'property' => 'username' ]
-            );
-        }
-    }
-
-
-    /**
-     *
-     * @param INEX_Form_User $form The form object
-     * @param \Entities\User $object The Doctrine2 entity (being edited or blank for add)
-     * @param bool $isEdit True of we are editing an object, false otherwise
-     * @return bool
-     */
-    protected function addPreValidate( $form, $object, $isEdit )
-    {
-        // is this user allowed to edit this object?
-        if( $isEdit && $this->getUser()->getPrivs() != \Entities\User::AUTH_SUPERUSER )
-        {
-            if( $this->getUser()->getCustomer() != $object->getCustomer() )
-            {
-                $this->addMessage( 'Illegal attempt to edit a user not under your control. The security team have been notified.' );
-                $this->getLogger()->alert( "User {$this->getUser()->getUsername()} illegally tried to edit {$object->getUsername()}" );
-                $this->redirect( 'user/list' );
-            }
-        }
-
-        return true;
-    }
-
-    /**
-     *
-     * @param INEX_Form_User $form The form object
-     * @param \Entities\User $object The Doctrine2 entity (being edited or blank for add)
-     * @param bool $isEdit True of we are editing an object, false otherwise
-     * @return void
-     */
-    protected function addPostValidate( $form, $object, $isEdit )
-    {
-        
-        if( $this->getUser()->getPrivs() == \Entities\User::AUTH_SUPERUSER )
-        {
-            $object->setCustomer(
-                $this->getD2EM()->getRepository( '\\Entities\\Customer' )->find( $form->getElement( 'custid' )->getValue() )
-            );
-        }
-                
-        if( $isEdit )
-        {
-            $object->setLastupdated( new DateTime() );
-            $object->setLastupdatedby( $this->getUser()->getId() );
-        }
-        else
-        {
-            $object->setCreated( new DateTime() );
-            $object->setCreator( $this->getUser()->getUsername() );
-
-            if( $this->getUser()->getPrivs() == \Entities\User::AUTH_CUSTADMIN )
-            {
-                $object->setCustomer( $this->getUser()->getCustomer() );
-                $object->setParent( $this->getUser() );
-                $object->setPrivs( \Entities\User::AUTH_CUSTUSER );
-                $object->setPassword( OSS_String::random( 16 ) );
-
-                $c = new \Entities\Contact();
-                $c->setCustomer( $this->getUser()->getCustomer() );
-                $c->setName( $form->getElement( 'name' )->getValue() );
-                $c->setEmail( $form->getElement( 'email' )->getValue() );
-                $c->setMobile( $form->getElement( 'authorisedMobile' )->getValue() );
-                $c->setCreator( $this->getUser()->getUsername() );
-                $c->setCreated( new DateTime() );
-                $this->getD2EM()->persist( $c );
-            }
-            else
-            {
-                try
-                {
-                    $object->setParent(
-                        $this->getD2EM()->createQuery(
-                            'SELECT u FROM \\Entities\\User u WHERE u.privs = ?1 AND u.Customer = ?2'
-                        )
-                        ->setParameter( 1, \Entities\User::AUTH_CUSTADMIN )
-                        ->setParameter( 2, $object->getCustomer() )
-                        ->setMaxResults( 1 )
-                        ->getSingleResult()
-                    );
-                }
-                catch( \Doctrine\ORM\NoResultException $e )
-                {
-                    $object->setParent( $object );
-                }
-            }
-        }
-
-        return true;
-    }
-
-
-    /**
-     *
-     * @param INEX_Form_User $form The form object
-     * @param \Entities\User $object The Doctrine2 entity (being edited or blank for add)
-     * @param bool $isEdit True of we are editing an object, false otherwise
-     * @return void
-     */
-    protected function addPostFlush( $form, $object, $isEdit )
-    {
-        if( !$isEdit )
-        {
-            $this->view->newuser = $object;
-            $this->sendWelcomeEmail( $object );
-        }
-        else
-        {
-            // users are cached so we should delete any existing cache entry for an edited user
-            $this->clearUserFromCache( $object->getId() );
-        }
-
-        return true;
-    }
-
-
-    /**
-     * Function which can be over-ridden to perform any pre-deletion tasks
-     *
-     * @param \Entities\User $object The Doctrine2 entity to delete
-     * @return bool Return false to stop / cancel the deletion
-     */
-    protected function preDelete( $object )
-    {
-        // if I'm not an admin, then make sure I have permission!
-        if( $this->getUser()->getPrivs() != \Entities\User::AUTH_SUPERUSER )
-        {
-            if( $object->getCustomer() != $this->getUser()->getCustomer() )
-            {
-                $this->getLogger()->notice( "{$this->getUser()->getUsername()} tried to delete other customer user {$object->getUsername()}" );
-                $this->addMessage( 'You are not authorised to delete this user. The administrators have been notified.' );
-                return false;
-            }
-        }
-        
-        // now delete all the users privileges also
-        foreach( $object->getPreferences() as $pref )
-        {
-            $object->removePreference( $pref );
-            $this->getD2EM()->remove( $pref );
-        }
-        
-        $this->getLogger()->info( "{$this->getUser()->getUsername()} deleted user {$object->getUsername()}" );
-        return true;
-    }
-    
-
     /**
      * Show the last users to login
      *
@@ -371,7 +179,7 @@ class UserController extends INEX_Controller_FrontEnd
     public function lastAction()
     {
         $this->assertPrivilege( \Entities\User::AUTH_SUPERUSER );
-        $this->view->last = $this->getD2EM()->getRepository( '\\Entities\\User' )->getLastLogins( 100 );
+        $this->view->last = $this->getD2EM()->getRepository( '\\Entities\\User' )->getLastLogins();
     }
 
 

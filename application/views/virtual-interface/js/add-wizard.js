@@ -1,35 +1,50 @@
 
-$( "#switchid" ).on( 'change', function( event ) {
-    $( "#switchid" ).attr( 'disabled', 'disabled' );
+$( "#switchid" ).on( 'change', updateSwitchPort );
+$( "#fn_switchid" ).on( 'change', updateSwitchPort );
 
+function updateSwitchPort(){
+    
+    $( this ).attr( 'disabled', 'disabled' );
+    
+    var prep = "#";
+    var type = "peering";
+    if( $( this ).attr( "id" ).substr( 0, 3 ) == "fn_" )
+    {
+        prep += "fn_";
+        type = "fanout";
+    }
+    
     if( $(this).val() != '0' ) {
-        tt_chosenClear( "#switchportid", "<option>Please wait, loading data...</option>" );
-
+        ossChosenClear( prep + "switchportid", "<option>Please wait, loading data...</option>" );
+        
         $.getJSON( "{genUrl controller='switch-port' action='ajax-get'}/id/"
-                + $( "#preselectPhysicalInterface" ).val() + "/switchid/" + $(this).val(), function( j ) {
-
+        + $( prep + "preselectPhysicalInterface" ).val() + "/type/" + type +  "/switchid/" + $(this).val(), function( j ) {
+            
             var options = "<option value=\"\">- select -</option>\n";
-
+            
             for( var i = 0; i < j.length; i++ )
                 options += "<option value=\"" + j[i].id + "\">" + j[i].name + " (" + j[i].type + ")</option>\n";
-
+            
             // do we have a preselect?
-            if( $( "#preselectSwitchPort" ).val() ) {
-                tt_chosenSet( "#switchportid", options, $( "#preselectSwitchPort" ).val() );
+            if( $( prep + "preselectSwitchPort" ).val() ) {
+                ossChosenSet( prep + "switchportid", options, $( prep + "preselectSwitchPort" ).val() );
             } else {
-                tt_chosenSet( "#switchportid", options );
+                ossChosenSet( prep + "switchportid", options );
             }
         });
     }
-
-    $("#switchid").removeAttr( 'disabled' );
-});
-
+    
+    $( this).removeAttr( 'disabled' );
+    
+};
 
 $( "#switchportid" ).change( function() {
     $( "#preselectSwitchPort" ).val( $( "#switchportid" ).val() );
 });
 
+$( "#fn_switchportid" ).change( function() {
+    $( "#fn_preselectSwitchPort" ).val( $( "#fn_switchportid" ).val() );
+});
 
 $( "#vlanid" ).on( 'change', function( event ) {
 
@@ -37,8 +52,8 @@ $( "#vlanid" ).on( 'change', function( event ) {
 
     if( $(this).val() != '0' ) {
 
-        tt_chosenClear( "#ipv4addressid", "<option>Please wait, loading data...</option>" );
-        tt_chosenClear( "#ipv6addressid", "<option>Please wait, loading data...</option>" );
+        //ossChosenClear( "#ipv4addressid", "<option>Please wait, loading data...</option>" );
+        //ossChosenClear( "#ipv6addressid", "<option>Please wait, loading data...</option>" );
 
         $.getJSON( "{genUrl controller='ipv4-address' action='ajax-get-for-vlan'}/vliid/"
                 + $( "#preselectVlanInterface" ).val() + "/vlanid/" + $(this).val(), null, function( j ){
@@ -46,13 +61,13 @@ $( "#vlanid" ).on( 'change', function( event ) {
             var options = "<option value=\"\">- select -</option>\n";
 
             for( var i = 0; i < j.length; i++ )
-                options += "<option value=\"" + j[i].id + "\">" + j[i].address + "</option>\n";
+                options += "<option value=\"" + j[i].address + "\">" + j[i].address + "</option>\n";
 
             // do we have a preselect?
             if( $( "#preselectIPv4Address" ).val() ) {
-                tt_chosenSet( "#ipv4addressid", options, $( "#preselectIPv4Address" ).val() );
+                ossChosenSet( "#ipv4addressid_osschzn", options, $( "#preselectIPv4Address" ).val() );
             } else {
-                tt_chosenSet( "#ipv4addressid", options );
+                ossChosenSet( "#ipv4addressid_osschzn", options );
             }
         });
 
@@ -62,13 +77,13 @@ $( "#vlanid" ).on( 'change', function( event ) {
             var options = "<option value=\"\">- select -</option>\n";
 
             for( var i = 0; i < j.length; i++ )
-                options += "<option value=\"" + j[i].id + "\">" + j[i].address + "</option>\n";
+                options += "<option value=\"" + j[i].address + "\">" + j[i].address + "</option>\n";
 
             // do we have a preselect?
             if( $( "#preselectIPv6Address" ).val() ) {
-                tt_chosenSet( "#ipv6addressid", options, $( "#preselectIPv6Address" ).val() );
+                ossChosenSet( "#ipv6addressid_osschzn", options, $( "#preselectIPv6Address" ).val() );
             } else {
-                tt_chosenSet( "#ipv6addressid", options );
+                ossChosenSet( "#ipv6addressid_osschzn", options );
             }
         });
 
@@ -90,15 +105,20 @@ $( "#ipv6addressid" ).change( function() {
 $(document).ready( function() {
 
     // trigger a change on selects to populate dependant fields
-    $("#switch_id").trigger( 'change' );
+    $("#switchid").trigger( 'change' );
+    $("#custid").trigger( 'change' );
     $("#vlanid").trigger( 'change' );
-
-    $( '#ipv4enabled' ).on( 'click', function( event ){
+    
+    
+    $(
+        '#ipv4enabled' ).on( 'click', function( event ){
 
         if( $( '#ipv4enabled' ).is(':checked') )
             $( '#ipv4details' ).slideDown();
         else
             $( '#ipv4details' ).slideUp();
+
+        $( window ).trigger( "resize" );
     });
 
     $( '#ipv6enabled' ).on( 'click', function( event ){
@@ -107,6 +127,8 @@ $(document).ready( function() {
             $( '#ipv6details' ).slideDown();
         else
             $( '#ipv6details' ).slideUp();
+
+        $( window ).trigger( "resize" );
     });
 
     if( $( '#ipv4enabled' ).is(':checked') )
@@ -114,5 +136,30 @@ $(document).ready( function() {
 
     if( $( '#ipv6enabled' ).is(':checked') )
         $( '#ipv6details' ).show();
-
+    
+    {if $resellerMode }
+        $("#fn_switchid").trigger( 'change' );
+        
+        $( '#fanout' ).on( 'click', function( event ){
+            if( $( this ).prop( 'checked' ) )
+                $( '#fanoutdetails' ).slideDown();
+            else
+                $( '#fanoutdetails' ).slideUp();
+        });
+        
+        if( $( '#fanout' ).prop( 'checked' ) )
+            $( '#fanoutdetails' ).show();
+        
+        $( '#custid' ).on( 'change', function(){
+            var resoldCusts = {$resoldCusts};
+            if( resoldCusts[ $(this).val() ] == undefined )
+            {
+                $( '#fanout' ).removeAttr( "checked" );
+                $( '#fanoutdetails' ).slideUp();
+                $( '#fanoutbox' ).slideUp();
+            }
+            else
+                $( '#fanoutbox' ).slideDown();
+        });
+    {/if}
 });

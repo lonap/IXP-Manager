@@ -26,12 +26,12 @@
  * Controller: Index controller
  *
  * @author     Barry O'Donovan <barry@opensolutions.ie>
- * @category   INEX
- * @package    INEX_Controller
+ * @category   IXP
+ * @package    IXP_Controller
  * @copyright  Copyright (c) 2009 - 2012, Internet Neutral Exchange Association Ltd
  * @license    http://www.gnu.org/licenses/gpl-2.0.html GNU GPL V2.0
  */
-class IndexController extends INEX_Controller_Action
+class IndexController extends IXP_Controller_Action
 {
 
     public function indexAction()
@@ -42,7 +42,7 @@ class IndexController extends INEX_Controller_Action
         if( $this->getUser()->getPrivs() == \Entities\User::AUTH_SUPERUSER )
             $this->_redirect( 'admin/index' );
         else if( $this->getUser()->getPrivs() == \Entities\User::AUTH_CUSTADMIN )
-            $this->_redirect( 'user/list' );
+            $this->_redirect( 'contact/list' );
         else
             $this->forward( 'index', 'dashboard' );
     }
@@ -53,6 +53,10 @@ class IndexController extends INEX_Controller_Action
     }
 
     public function aboutAction()
-    {}
+    {
+        $this->view->apachever = str_replace("Apache/", "", $_SERVER['SERVER_SOFTWARE']);
+        $this->view->phpver    = phpversion();
+        $this->view->dbver     = $this->getD2EM()->getConnection()->query( "SELECT VERSION() AS V" )->fetch()['V'];
+    }
 
 }

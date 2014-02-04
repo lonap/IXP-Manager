@@ -3,23 +3,24 @@
 <div class="navbar navbar-inverse navbar-fixed-top">
     <div class="navbar-inner">
         <div class="{if isset( $hasIdentity ) and $hasIdentity and $user->getPrivs() eq 3}container-fluid{else}container{/if}">
-            <a class="brand" href="{genUrl}">{$options.identity.sitename}</a>
+             <a id="collapsed_menu" class="btn btn-navbar" data-target=".nav-collapse" data-toggle="collapse">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </a>
+            <a class="brand" href="{genUrl}">
+                {if $smarty.const.MAINTENANCE_MODE}
+                    MAINTENANCE MODE
+                {else}
+                    {$options.identity.sitename}
+                {/if}
+            </a>
             {if isset( $hasIdentity ) and $hasIdentity}
                 <div class="nav-collapse">
                      <ul class="nav">
-                        {if $user->getPrivs() eq 3}
-                            <li>
+                        {if $user->getPrivs() eq 1}
+                            <li {if $controller eq "dashboard"}class="active"{/if}>
                                 <a href="{genUrl}">Home</a>
-                            </li>
-                        {elseif $user->getPrivs() eq 2}
-                            <li {if $controller eq 'user'}class="active"{/if}>
-                                <a href="{genUrl controller="user" action="list"}">User Admin</a>
-                            </li>
-                        {else}
-                            <li {if $controller eq 'dashboard' and $action eq 'index'}class="active"{/if}>
-                                <a href="{genUrl controller="dashboard"}">
-                                    Dashboard
-                                </a>
                             </li>
                         {/if}
                         {if $user->getPrivs() neq 2}
@@ -32,29 +33,37 @@
                                     <li>
                                         <a href="{genUrl controller="customer" action="details"}">Member Details</a>
                                     </li>
-                                    <li>
-                                        <a href="{genUrl controller="meeting" action="read"}">Meetings</a>
-                                    </li>
-                                </ul>
-                            </li>
-                            <li class="dropdown">
-                                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Peering<b class="caret"></b></a>
-                                <ul class="dropdown-menu">
-                                    {if $user->getPrivs() eq 1}
+                                    {if not isset( $options['frontend']['disabled']['meeting'] ) or not $options['frontend']['disabled']['meeting'] }
                                         <li>
-                                            <a href="{genUrl controller="peering-manager"}">Peering Manager</a>
+                                            <a href="{genUrl controller="meeting" action="read"}">Meetings</a>
                                         </li>
                                     {/if}
-                                    <li>
-                                        <a href="{genUrl controller="peering-matrix"}">Public Peering Matrix</a>
-                                    </li>
+                                </ul>
+                            </li>
+                            <li class="dropdown {if $controller eq 'peering-manager' or $controller eq 'rs-prefixes'
+                                    or $controller eq 'peering-matrix'}active{/if}">
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Peering<b class="caret"></b></a>
+                                <ul class="dropdown-menu">
+                                    {if $user->getPrivs() eq 1 and $user->getCustomer()->getType() neq CUSTOMER::TYPE_ASSOCIATE}
+                                        {if !isset( $options['frontend']['disabled']['peering-manager'] ) or !$options['frontend']['disabled']['peering-manager'] }
+                                            <li><a href="{genUrl controller="peering-manager"}">Peering Manager</a></li>
+                                        {/if}
+                                        {if not isset( $options['frontend']['disabled']['rs-prefixes'] ) or not $options['frontend']['disabled']['rs-prefixes'] }
+                                            {if $user->getCustomer()->isRouteServerClient()}
+                                                <li><a href="{genUrl controller="rs-prefixes" action="list"}">Route Server Prefixes</a></li>
+                                            {/if}
+                                        {/if}
+                                    {/if}
+                                    {if !isset( $options['frontend']['disabled']['peering-matrix'] ) or !$options['frontend']['disabled']['peering-matrix'] }
+                                        <li><a href="{genUrl controller="peering-matrix"}">Public Peering Matrix</a></li>
+                                    {/if}
                                 </ul>
                             </li>
 
                             {* STATIC DOCUMENTATION LINKS - SPECIFIC TO INDIVIDUAL IXPS *}
                             {* Add a skinned file in views/_skins/xxx/header-documentation.phtml for your IXP to override the sample *}
                             {tmplinclude file="header-documentation.phtml"}
-                            
+
                             <li class="dropdown {if $controller eq 'statistics' or substr( $action, 0, 9 ) eq 'statistic' or $action eq 'traffic-stats' or $action eq 'trunk-graphs' or $action eq 'switch-graphs' or $controller eq 'weather-map'}active{/if}">
                                 <a href="#" class="dropdown-toggle" data-toggle="dropdown">Statistics<b class="caret"></b></a>
                                 <ul class="dropdown-menu">
@@ -62,16 +71,20 @@
                                         <li>
                                             <a href="{genUrl controller="statistics" action="member"}">My Statistics</a>
                                         </li>
-                                        <li>
-                                            <a href="{genUrl controller="dashboard" action="statistics"}">My Peer to Peer Traffic</a>
-                                        </li>
+
+                                        {if isset( $options.sflow.enabled ) and $options.sflow.enabled}
+                                            <li>
+                                                <a href="{genUrl controller="statistics" action="p2p"}">My Peer to Peer Traffic</a>
+                                            </li>
+                                        {/if}
+                                        
                                         <li class="divider"></li>
                                     {/if}
                                     <li>
-                                        <a href="{genUrl controller="statistics" action="public"}">Overall Peering Statistics</a>
+                                        <a href="{genUrl controller="statistics" action="public"}">Overall Peering Graphs</a>
                                     </li>
                                     <li>
-                                        <a href="{genUrl controller="statistics" action="trunks"}">Trunk Graphs</a>
+                                        <a href="{genUrl controller="statistics" action="trunks"}">Inter-Switch / PoP Graphs</a>
                                     </li>
                                     <li>
                                         <a href="{genUrl controller="statistics" action="switches"}">Switch Aggregate Graphs</a>
@@ -92,13 +105,25 @@
                         {if $user->getPrivs() eq USER::AUTH_SUPERUSER}
                             {tmplinclude file="staff-links.phtml"}
                         {/if}
-                        <li class="{if $controller eq 'profile'}active{/if}">
-                            <a href="{genUrl controller="profile"}">Profile</a>
-                        </li>
-                        
-                        <li class="{if $controller eq 'index' and $action eq 'about'}active{/if}">
-                            <a href="{genUrl controller="index" action="about"}">About</a>
-                        </li>
+
+                        {if $user->getPrivs() neq 3}
+	                        <li class="dropdown">
+							    <a href="#" class="dropdown-toggle" data-toggle="dropdown">My Account<b class="caret"></b></a>
+							    <ul class="dropdown-menu">
+							        <li>
+							            <a href="{genUrl controller="profile"}">Profile</a>
+							        </li>
+							        <li>
+							            <a href="{genUrl controller="api-key"}">API Keys</a>
+							        </li>
+							        <li class="divider"></li>
+							        <li>
+		                                <a href="{genUrl controller="auth" action="logout"}">Logout</a>
+        							</li>
+							    </ul>
+							</li>
+                        {/if}
+
                     </ul>
                     <ul class="nav pull-right">
                         {if $user->getPrivs() eq 3}
@@ -111,9 +136,29 @@
                                 </select>
                             </form>
                         {/if}
-                            
+
                         {if isset( $session->switched_user_from ) and $session->switched_user_from}
                             <li><a href="{genUrl controller="auth" action="switch-user-back"}">Switch Back</a></li>
+                        {elseif $user->getPrivs() eq 3}
+	                        <li class="dropdown">
+							    <a href="#" class="dropdown-toggle" data-toggle="dropdown">My Account<b class="caret"></b></a>
+							    <ul class="dropdown-menu">
+							        <li>
+							            <a href="{genUrl controller="profile"}">Profile</a>
+							        </li>
+							        <li>
+							            <a href="{genUrl controller="api-key"}">API Keys</a>
+							        </li>
+							        <li class="divider"></li>
+							        <li>
+							            <a href="{genUrl controller="customer" action="unread-notes"}">Unread Notes</a>
+							        </li>
+							        <li class="divider"></li>
+							        <li>
+		                                <a href="{genUrl controller="auth" action="logout"}">Logout</a>
+        							</li>
+							    </ul>
+							</li>
                         {else}
                             <li><a href="{genUrl controller="auth" action="logout"}">Logout</a></li>
                         {/if}
@@ -137,13 +182,13 @@
         </div>
     </div>
 </div>
-    
+
 {if isset( $hasIdentity ) and $hasIdentity and $user->getPrivs() eq 3}
-    
+
     <div class="container-fluid">
 
     {tmplinclude file="menu.phtml"}
-    
+
 {elseif isset( $mode ) and $mode eq 'fluid'}
 
     <div class="container-fluid">

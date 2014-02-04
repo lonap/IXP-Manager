@@ -12,52 +12,52 @@ class VirtualInterface
     /**
      * @var string $name
      */
-    private $name;
+    protected $name;
 
     /**
      * @var string $description
      */
-    private $description;
+    protected $description;
 
     /**
      * @var integer $mtu
      */
-    private $mtu;
+    protected $mtu;
 
     /**
      * @var boolean $trunk
      */
-    private $trunk;
+    protected $trunk;
 
     /**
      * @var integer $channelgroup
      */
-    private $channelgroup;
+    protected $channelgroup;
 
     /**
      * @var integer $id
      */
-    private $id;
+    protected $id;
 
     /**
      * @var \Doctrine\Common\Collections\ArrayCollection
      */
-    private $PhysicalInterfaces;
+    protected $PhysicalInterfaces;
 
     /**
      * @var \Doctrine\Common\Collections\ArrayCollection
      */
-    private $VlanInterfaces;
+    protected $VlanInterfaces;
 
     /**
      * @var \Doctrine\Common\Collections\ArrayCollection
      */
-    private $MACAddresses;
+    protected $MACAddresses;
 
     /**
      * @var Entities\Customer
      */
-    private $Customer;
+    protected $Customer;
 
     /**
      * Constructor
@@ -85,7 +85,7 @@ class VirtualInterface
     /**
      * Get name
      *
-     * @return string 
+     * @return string
      */
     public function getName()
     {
@@ -108,7 +108,7 @@ class VirtualInterface
     /**
      * Get description
      *
-     * @return string 
+     * @return string
      */
     public function getDescription()
     {
@@ -131,7 +131,7 @@ class VirtualInterface
     /**
      * Get mtu
      *
-     * @return integer 
+     * @return integer
      */
     public function getMtu()
     {
@@ -154,7 +154,7 @@ class VirtualInterface
     /**
      * Get trunk
      *
-     * @return boolean 
+     * @return boolean
      */
     public function getTrunk()
     {
@@ -177,7 +177,7 @@ class VirtualInterface
     /**
      * Get channelgroup
      *
-     * @return integer 
+     * @return integer
      */
     public function getChannelgroup()
     {
@@ -187,7 +187,7 @@ class VirtualInterface
     /**
      * Get id
      *
-     * @return integer 
+     * @return integer
      */
     public function getId()
     {
@@ -220,7 +220,7 @@ class VirtualInterface
     /**
      * Get PhysicalInterfaces
      *
-     * @return Doctrine\Common\Collections\Collection 
+     * @return Doctrine\Common\Collections\Collection
      */
     public function getPhysicalInterfaces()
     {
@@ -253,7 +253,7 @@ class VirtualInterface
     /**
      * Get VlanInterfaces
      *
-     * @return Doctrine\Common\Collections\Collection 
+     * @return Doctrine\Common\Collections\Collection
      */
     public function getVlanInterfaces()
     {
@@ -266,7 +266,7 @@ class VirtualInterface
      * @param Entities\MACAddress $mACAddresses
      * @return VirtualInterface
      */
-    public function addMACAddresse(\Entities\MACAddress $mACAddresses)
+    public function addMACAddresses(\Entities\MACAddress $mACAddresses)
     {
         $this->MACAddresses[] = $mACAddresses;
     
@@ -278,7 +278,7 @@ class VirtualInterface
      *
      * @param Entities\MACAddress $mACAddresses
      */
-    public function removeMACAddresse(\Entities\MACAddress $mACAddresses)
+    public function removeMACAddresses(\Entities\MACAddress $mACAddresses)
     {
         $this->MACAddresses->removeElement($mACAddresses);
     }
@@ -286,7 +286,7 @@ class VirtualInterface
     /**
      * Get MACAddresses
      *
-     * @return Doctrine\Common\Collections\Collection 
+     * @return Doctrine\Common\Collections\Collection
      */
     public function getMACAddresses()
     {
@@ -309,10 +309,52 @@ class VirtualInterface
     /**
      * Get Customer
      *
-     * @return Entities\Customer 
+     * @return Entities\Customer
      */
     public function getCustomer()
     {
         return $this->Customer;
+    }
+
+    /**
+     * Get the *type* of virtual interface based on the switchport type.
+     *
+     * Actually returns type of the first physical interface's switchport. All
+     * switchports in a virtual interface should be the same type so just
+     * examining the first is sufficient to determine the *virtual interface type*.
+     *
+     * @see \Entities\SwitchPort::$TYPES
+     *
+     * @return string|bool The virtual interface type (`\Entities\SwitchPort::TYPE_XXX`) or false if no physical interfaces.
+     */
+    public function getType()
+    {
+        if( count( $this->getPhysicalInterfaces() ) )
+            return $this->getPhysicalInterfaces()[0]->getSwitchPort()->getType();
+        else
+            return false;
+    }
+
+    /**
+     * Add MACAddresses
+     *
+     * @param \Entities\MACAddress $mACAddresses
+     * @return VirtualInterface
+     */
+    public function addMACAddresse(\Entities\MACAddress $mACAddresses)
+    {
+        $this->MACAddresses[] = $mACAddresses;
+    
+        return $this;
+    }
+
+    /**
+     * Remove MACAddresses
+     *
+     * @param \Entities\MACAddress $mACAddresses
+     */
+    public function removeMACAddresse(\Entities\MACAddress $mACAddresses)
+    {
+        $this->MACAddresses->removeElement($mACAddresses);
     }
 }

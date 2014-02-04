@@ -12,17 +12,17 @@ class Vendor
     /**
      * @var string $name
      */
-    private $name;
+    protected $name;
 
     /**
      * @var integer $id
      */
-    private $id;
+    protected $id;
 
     /**
      * @var \Doctrine\Common\Collections\ArrayCollection
      */
-    private $Switches;
+    protected $Switches;
 
     /**
      * Constructor
@@ -96,5 +96,61 @@ class Vendor
     public function getSwitches()
     {
         return $this->Switches;
+    }
+    /**
+     * @var string
+     */
+    private $shortname;
+
+    /**
+     * @var string
+     */
+    private $nagios_name;
+
+
+    /**
+     * Set shortname
+     *
+     * @param string $shortname
+     * @return Vendor
+     */
+    public function setShortname($shortname)
+    {
+        $this->shortname = $shortname;
+    
+        return $this;
+    }
+
+    /**
+     * Get shortname
+     *
+     * @return string 
+     */
+    public function getShortname()
+    {
+        return $this->shortname;
+    }
+
+    /**
+     * Set nagios_name
+     *
+     * @param string $nagiosName
+     * @return Vendor
+     */
+    public function setNagiosName($nagiosName)
+    {
+        $this->nagios_name = $nagiosName;
+    
+        return $this;
+    }
+
+    /**
+     * Get nagios_name
+     *
+     * @return string 
+     */
+    public function getNagiosName()
+    {
+        return $this->nagios_name;
     }
 }

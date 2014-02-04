@@ -26,12 +26,12 @@
  * Controller: Manage vendors
  *
  * @author     Barry O'Donovan <barry@opensolutions.ie>
- * @category   INEX
- * @package    INEX_Controller
+ * @category   IXP
+ * @package    IXP_Controller
  * @copyright  Copyright (c) 2009 - 2012, Internet Neutral Exchange Association Ltd
  * @license    http://www.gnu.org/licenses/gpl-2.0.html GNU GPL V2.0
  */
-class VendorController extends INEX_Controller_FrontEnd
+class VendorController extends IXP_Controller_FrontEnd
 {
     /**
      * This function sets up the frontend controller
@@ -42,7 +42,7 @@ class VendorController extends INEX_Controller_FrontEnd
     
         $this->view->feParams = $this->_feParams = (object)[
             'entity'        => '\\Entities\\Vendor',
-            'form'          => 'INEX_Form_Vendor',
+            'form'          => 'IXP_Form_Vendor',
             'pagetitle'     => 'Vendors',
         
             'titleSingular' => 'Vendor',
@@ -54,8 +54,10 @@ class VendorController extends INEX_Controller_FrontEnd
             'listOrderByDir' => 'ASC',
         
             'listColumns'    => [
-                'id'        => [ 'title' => 'UID', 'display' => false ],
-                'name'      => 'Name'
+                'id'             => [ 'title' => 'UID', 'display' => false ],
+                'name'           => 'Name',
+                'shortname'      => 'Short Name',
+                'nagios_name'    => 'Nagios Name'
             ]
         ];
     
@@ -71,7 +73,7 @@ class VendorController extends INEX_Controller_FrontEnd
     protected function listGetData( $id = null )
     {
         $qb = $this->getD2EM()->createQueryBuilder()
-            ->select( 'v.id AS id, v.name AS name' )
+            ->select( 'v.id AS id, v.name AS name, v.shortname AS shortname, v.nagios_name AS nagios_name' )
             ->from( '\\Entities\\Vendor', 'v' );
     
         if( isset( $this->_feParams->listOrderBy ) )

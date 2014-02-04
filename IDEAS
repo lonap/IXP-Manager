@@ -2,21 +2,23 @@
 Potential Todo / Feature Ideas
 ------------------------------
 
-* Add support for INEX member private VLAN service:
+* API - "another thing that could potentially be useful.. the way you
+  generate RIR objects.. if members could generate their macro and maybe
+  import/exports based on the data route servers receive this could be
+  useful.. especially keeping import/exports up to date with a lot of
+  peering is a major pain.."
 
-Existing schema.  Private vlans should be defined in the vlan table.  The
-vlan table needs an extra field called "private", maybe.  Need a separate
-privatevlan table to link up vlaninterface ids to these vlans + a little
-front-end glue to show what private VLANs are defined and who they are
-associated with.
+* "the peer2peer stats page does not scale well for networks with many peers.  
+  I think it could be an idea to make it configurable if you want the
+  actual graphs or just a list where you can select which graphs you would
+  like to see in one view"
 
-Finally, this all needs to be checked to make sure it works with the sflow
-stuff, including that the specific private vlan member owners can see the
-vlan, but no-one else can.
+* <nick-2128> you know what would be incredibly useful? an ixpmanager.php 
+  file which bleated about whether the correct modules are installed or not
 
+* Review MRTG script for reseller and fanout ports
 
-
-* Put a frontend on the new RIB database table(s)
+* Fix static documentation to allow for auth. See StaticController::__call()
 
 * INEX require that members peer "with at least the greater of 4 other
   Members, or 10% of other Members". A tool to list members failing this
@@ -35,3 +37,47 @@ vlan, but no-one else can.
 * Go through application/config/application.ini.dist and fix FIXMEs and add new
   documentation where indicated
 
+* Would be useful to display last login information in the user edit screen or 
+  the list of users. Also the created by, last updated date?
+
+* Member field for "MD5 Required" with values: "No", "Yes - mandatory", 
+  "Yes - on request", "Unknown"
+
+* Show per-member peering matrix on member overview page? 
+
+* Member health report
+
+* Allow member to modify template that Request Peering email is populated 
+  with when sending invite using "Peering Manager". Ideally there could be a
+  list of predefined variables available that could be used while templating 
+  email (ie. peer name, peer ASN, own name, own ASN, own WWW, common peering 
+  LAN IPs, AS MACRO, peering email, NOC email and so on), so member could 
+  create own template using above variables + own text.
+
+* Add integrated PeeringDB functionality via access to:
+  mysql -h mysql.peeringdb.com  
+
+* Add PeeringDB link to PM request template
+
+* Update suggested prefix limit / real prefix limit based on IRRDB entries?
+
+* Tool to plug data into EURO-IX database
+
+* Add "Abbrieviated Name" to schema for titles in, e.g., p2p graphs
+
+* Add ASN to graph titles
+
+* Multiple P2P graphs for LAG ports
+
+* "hose that you have bilateral peerings with is the difference between the 
+  'Peers' tab and the 'Potential Bilateral Peers' tab. But I'll add a note 
+  to add a tab that also shows this."
+
+
+* Maintenance Announcements / Diary  -was issue #30. 
+  * Page for upcoming scheduled maintenance
+  * Select affected switches and generate a list of affected members (Name, ASN, IPv4, IPv6 addresses)
+  * Add notification when members login, especially affected members, link to maintenance pages.
+
+* Have a "private" directory analogous to the "public" one,with files only
+  loadable by logged in users. See issue #71.

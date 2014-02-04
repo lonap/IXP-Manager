@@ -9,7 +9,7 @@
             <a href="{genUrl controller='customer' action='list'}">Customers</a> <span class="divider">/</span>
         </li>
         <li>
-             {$cust->getName()} <span class="divider">/</span>
+            <a href="{genUrl controller='customer' action='overview' id=$cust->getId()}">{$cust->getName()}</a> <span class="divider">/</span>
         </li>
         <li class="active">
             Statistics
@@ -20,7 +20,17 @@
 {else}
     <div class="page-content">
         <div class="page-header">
-            <h1>IXP Interface Statistics :: {$cust->getName()} ({foreach from=$categories key=cname item=cvalue}{if $category eq $cvalue}{$cname}{/if}{/foreach})</h1>
+            <h1>
+                IXP Interface Statistics
+                
+                {if $multiIXP}
+                    @ {$ixp->getShortname()}
+                {else}
+                    :: {$cust->getName()}
+                {/if}
+
+                ({foreach from=$categories key=cname item=cvalue}{if $category eq $cvalue}{$cname}{/if}{/foreach})
+            </h1>
         </div>
 {/if}
 
@@ -32,28 +42,66 @@
     <div class="span6">
 
         {if $switchname eq ''}
-            <h2>Aggregate Statistics for All Ports</h2>
+            <h3>
+                Aggregate Statistics for
+                
+                {if $multiIXP}
+                    {$ixp->getShortname()}
+                {else}
+                    All Peering Ports
+                {/if}
+            </h3>
         {else}
-            <h2>Port: {$switchname} / {$portname}</h2>
+            <h3>
+                Port: {$switchname} / {$portname}
+                
+                {if $resellerMode and $cust->isReseller()}
+                    <br /><small>
+                    {if $pi->getSwitchPort()->getType() eq SWITCHPORT::TYPE_PEERING}
+                        Peering Port
+                    {elseif $pi->getSwitchPort()->getType() eq SWITCHPORT::TYPE_FANOUT}
+                        Fanout Port for <a href="{genUrl controller='customer' action='overview' id=$pi->getRelatedInterface()->getVirtualInterface()->getCustomer()->getId()}">
+                            {$pi->getRelatedInterface()->getVirtualInterface()->getCustomer()->getAbbreviatedName()}
+                        </a>
+                    {elseif $pi->getSwitchPort()->getType() eq SWITCHPORT::TYPE_RESELLER}
+                        Reseller Uplink Port
+                    {/if}
+                    </small>
+                {/if}
+            </h3>
         {/if}
 
     </div>
     <div class="span6">
     
-        <form action="{genUrl controller="statistics" action="member-drilldown" shortname=$cust->getShortname() monitorindex=$monitorindex}" method="post" class="form-horizontal">
+        <form action="{genUrl controller="statistics" action="member-drilldown" ixp=$ixp->getId() shortname=$cust->getShortname() monitorindex=$monitorindex}" method="post" class="form-horizontal">
             
             <strong>Graph Type:&nbsp;&nbsp;&nbsp;</strong>
 
-            <select name="category" onchange="this.form.submit();" class="chzn-select">
+            <select name="category" onchange="this.form.submit();" class="chzn-select span2">
                 {foreach from=$categories key=cname item=cvalue}
                     <option value="{$cvalue}" {if $category eq $cvalue}selected{/if}>{$cname}</option>
                 {/foreach}
             </select>
             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-            <a class="btn" href="{genUrl controller="statistics" action="member"}{if $user->getPrivs() eq 3}/shortname/{$cust->getShortname()}{/if}">
-                Back to Overview
+            <a class="btn btn-primary" href="{genUrl controller="statistics" action="member" ixp=$ixp->getId()}{if $user->getPrivs() eq 3}/shortname/{$cust->getShortname()}{/if}">
+                Statistics Overview
             </a>
-            
+            {if $ixp->getSmokeping() and $switchname neq ''}
+                {$canPing = 0}
+                {foreach $pi->getVirtualInterface()->getVlanInterfaces() as $vli}
+                    {if ( $vli->getIpv4enabled() and $vli->getIpv4canping() ) or ( $vli->getIpv6enabled() and $vli->getIpv6canping() )}
+                        {$canPing = 1}
+                        {break}
+                    {/if}
+                {/foreach}
+                {if $canPing}
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    <a class="btn btn-primary" href="{genUrl controller="smokeping" action="member-drilldown" ixp=$ixp->getId() vi=$pi->getVirtualInterface()->getId()}{if $user->getPrivs() eq 3}{/if}">
+                        Smokeping
+                    </a>
+                {/if}
+            {/if}
         </form>
 
     </div>
@@ -73,6 +121,7 @@
 
             <p>
                 {genMrtgGraphBox
+                        ixp=$ixp->getId()
                         shortname=$cust->getShortname()
                         category=$category
                         monitorindex=$monitorindex

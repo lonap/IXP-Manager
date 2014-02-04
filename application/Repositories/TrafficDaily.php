@@ -45,23 +45,29 @@ class TrafficDaily extends EntityRepository
      *        }
      *      }
      *
-     *
-     * @see \INEX_Mrtg::$CATEGORIES
+     * @see \IXP_Mrtg::$CATEGORIES
      * @param \DateTime $day The day to load records for
-     * @param string $category The category of records to load (one of \INEX_Mrtg::$CATEGORIES)
+     * @param string $category The category of records to load (one of \IXP_Mrtg::$CATEGORIES)
+     * @param \Entities\IXP $ixp The IXP to load results for (or false)
      * @return array An array of all switch objects
      */
-    public function load( $day, $category )
+    public function load( $day, $category, $ixp = false )
     {
-        return $this->getEntityManager()->createQuery(
-                "SELECT td, c
-                 FROM Entities\\TrafficDaily td
-                 LEFT JOIN td.Customer c
-                 WHERE td.day = ?1 AND td.category = ?2"
-            )
-            ->setParameter( 1, $day )
-            ->setParameter( 2, $category )
-            ->getArrayResult();
+        $dql = "SELECT td, c, i
+                    FROM Entities\\TrafficDaily td
+                    LEFT JOIN td.Customer c
+                    LEFT JOIN td.IXP i
+                    WHERE td.day = :day AND td.category = :cat";
+        
+        if( $ixp ) $dql .= " AND i = :ixp";
+        
+        $q = $this->getEntityManager()->createQuery( $dql )
+            ->setParameter( 'day', $day )
+            ->setParameter( 'cat', $category );
+        
+        if( $ixp ) $q->setParameter( 'ixp', $ixp );
+        
+        return $q->getArrayResult();
     }
     
     
@@ -70,13 +76,42 @@ class TrafficDaily extends EntityRepository
      * Delete all entries for a given day
      *
      * @param string $day The day to delete all entries for
+     * @param \Entities\IXP $ixp The IXP to delet entries for (or false)
      * @return int The number of entries removed
      */
-    public function deleteForDay( $day )
+    public function deleteForDay( $day, $ixp = false  )
     {
-        return $this->getEntityManager()->createQuery( "DELETE \\Entities\\TrafficDaily td WHERE td.day = ?1" )
-            ->setParameter( 1, $day )
-            ->execute();
+        $dql = "DELETE \\Entities\\TrafficDaily td WHERE td.day = :day";
+        
+        if( $ixp ) $dql .= " AND td.IXP = :ixp";
+        
+        $q = $this->getEntityManager()->createQuery( $dql )
+            ->setParameter( 'day', $day );
+        
+        if( $ixp ) $q->setParameter( 'ixp', $ixp );
+        
+        return $q->execute();
+    }
+    
+    /**
+     * Delete all entries before a given day
+     *
+     * @param string $day The day to delete all entries before
+     * @param \Entities\IXP $ixp The IXP to delete entries for (or false)
+     * @return int The number of entries removed
+     */
+    public function deleteBefore( $day, $ixp = false  )
+    {
+        $dql = "DELETE \\Entities\\TrafficDaily td WHERE td.day < :day";
+    
+        if( $ixp ) $dql .= " AND td.IXP = :ixp";
+    
+        $q = $this->getEntityManager()->createQuery( $dql )
+            ->setParameter( 'day', $day );
+    
+        if( $ixp ) $q->setParameter( 'ixp', $ixp );
+    
+        return $q->execute();
     }
     
     

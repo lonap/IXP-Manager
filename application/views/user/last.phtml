@@ -33,11 +33,14 @@
             {$l.email}
         </td>
         <td>
-            <a href="{genUrl controller="customer" action="dashboard" id=$l.cust_id}">
+            <a href="{genUrl controller="customer" action="overview" id=$l.cust_id}">
                 {$l.cust_name}
             </a>
         </td>
-        <td>{$l.lastlogin|date_format:"%Y-%m-%d %H:%M:%S"}</td>
+        <td>
+            {$l.lastlogin|date_format:"%Y-%m-%d %H:%M:%S"}
+            <a class="btn btn-mini have-tooltip" title="History" href="{genUrl controller='login-history' action="list" uid=$l.user_id limit=1}"><i class="icon-time"></i></a>
+        </td>
     </tr>
     {/foreach}
     </tbody>
@@ -45,10 +48,16 @@
 
 <script type="text/javascript">
 	oTable = $('#ixpDataTable').dataTable({
-		"aaSorting": [[ 2, 'desc' ]],
+		"aaSorting": [[ 3, 'desc' ]],
 		"sDom": "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>",
 		"sPaginationType": "bootstrap",
-		"iDisplayLength": 25,
+		"iDisplayLength": 12,
+		"aoColumns": [
+            { "sType": "string" },
+            { "sType": "string" },
+            { "sType": "html" },
+            { "sType": "string" }
+        ]
 	});
 
 	$('#ixpDataTable').show();

@@ -54,6 +54,7 @@ phpSettings.display_startup_errors = 0
 phpSettings.display_errors = 0
 
 includePaths.library    = APPLICATION_PATH "/../library"
+includePaths.osssnmp    = APPLICATION_PATH "/../library/OSS_SNMP.git"
 includePaths.osslibrary = APPLICATION_PATH "/../library/OSS-Framework.git"
 
 bootstrap.path = APPLICATION_PATH "/Bootstrap.php"
@@ -63,8 +64,46 @@ includePaths.twitter = APPLICATION_PATH "/../library/Bootstrap-Zend-Framework/li
 autoloaderNamespaces.Twitter = "Twitter_"
 
 pluginPaths.OSS_Resource = APPLICATION_PATH "/../library/OSS-Framework.git/OSS/Resource"
-pluginPaths.INEX_Resource = APPLICATION_PATH "/../library/INEX/Resource"
+pluginPaths.IXP_Resource = APPLICATION_PATH "/../library/IXP/Resource"
 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Contact Group Types
+;;
+;; Contacts can be added to various groups, and these groups are categorised by type.
+;;
+;; Define here any contact group types you like. Note that the ROLE type is special and
+;; removing it will disable the contact role form elements. It is intended to assign roles
+;; to contacts such as 'Admin', 'Billing', 'Technical', 'Marketing'. These are set up
+;; by the default fixtures.
+;;
+;; See: https://github.com/inex/IXP-Manager/wiki/Contact-Groups
+;;
+
+contact.group.types.ROLE = "Role"
+; example: contact.group.types.MEETING = "Meeting"
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; Enables multi-IXP mode.
+;;
+;; See: https://github.com/inex/IXP-Manager/wiki/Multi-IXP-Functionality
+;;
+multiixp.enabled = false
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; Enables resller mode
+;;
+;; See: https://github.com/inex/IXP-Manager/wiki/Reseller-Functionality
+;;
+reseller.enabled = true
+
+;;
+;; If reseller mode enabled and this is set to true then super admin or customer itself
+;; can not add/change resold customers details.
+;;
+reseller.no_billing_for_resold_customers = true
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -81,7 +120,6 @@ pluginPaths.INEX_Resource = APPLICATION_PATH "/../library/INEX/Resource"
 mini_js = 1
 mini_css = 1
 
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Resources
 ;;
@@ -95,11 +133,24 @@ resources.frontController.moduleDirectory = APPLICATION_PATH "/modules"
 resources.modules[] =
 
 
-resources.auth.enabled = 1
+;;;;;;;;
+;;
+;; Authentication options
+;;
+;; The default password hash method is bcrypt (with a iteration count of 9).
+;;
+;; You can (and may) want to use 'plaintext' 
+;;   - see https://github.com/inex/IXP-Manager/wiki/Password-Hashing
+;;
+resources.auth.oss.pwhash  = "bcrypt"
+resources.auth.oss.hash_cost  = 9
+
 resources.auth.oss.adapter = "OSS_Auth_Doctrine2Adapter"
-resources.auth.oss.pwhash  = "plaintext"
-;resources.auth.oss.hash_cost  = 9
+resources.auth.enabled = 1
 resources.auth.oss.entity  = "\\Entities\\User"
+resources.auth.oss.login_history.enabled = 1
+resources.auth.oss.login_history.entity = "\\Entities\\UserLoginHistory"
+
 
 
 ;; You'll want to allow your users find their usernames and reset
@@ -122,6 +173,7 @@ resources.auth.oss.entity  = "\\Entities\\User"
 ;; for Ubuntu. For FreeBSD, try "/usr/local/share/pear/Doctrine/ORM"
 resources.doctrine2cache.path               = "/usr/share/php/Doctrine/ORM"
 resources.doctrine2cache.autoload_method    = "pear"
+resources.doctrine2cache.namespace                          = 'IXPManager' 
 ; resources.doctrine2cache.type                               = 'ArrayCache'
 resources.doctrine2cache.type                               = 'MemcacheCache'
 resources.doctrine2cache.memcache.servers.0.host       = '127.0.0.1'
@@ -153,6 +205,9 @@ resources.doctrine2.connection.options.dbname   = 'ixp'
 resources.doctrine2.connection.options.user     = 'ixp'
 resources.doctrine2.connection.options.password = 'password'
 resources.doctrine2.connection.options.host     = '127.0.0.1'
+resources.doctrine2.connection.options.charset  = 'utf8mb4'
+; if using MySQL <5.5.3, replace the above with:
+; resources.doctrine2.connection.options.charset  = 'utf8'
 
 
 
@@ -216,9 +271,13 @@ resources.smarty.debugging = 0
 
 
 ;;
-;; Any controller extending INEX_Controller_FrontEnd can be disabled by setting it to '1' below
+;; Any controller extending IXP_Controller_FrontEnd can be disabled by setting it to '1' below
 ;;
-; controller.XXX.enabled = 0
+; frontend.disabled.XXX = 1
+;
+; e.g.
+;    frontend.disabled.cust-kit = 1
+;    frontend.disabled.console-server-connection = 1
 
 
 
@@ -237,8 +296,8 @@ identity.orgname  = "XXX"
 ;; e.g. we use "INEX Operations" here
 identity.name  = "XXX Operations"
 
-;; e.g. we use "operations@example.com" here
-identity.email = "operations@inex.ie"
+;; e.g. we use "operations@inex.ie" here
+identity.email = "operations@example.com"
 
 ;; e.g. we use "INEX Ops Autobot"
 identity.autobot.name  = "XXX Ops Autobot"
@@ -258,6 +317,9 @@ identity.sitename = "XXX IXP Manager"
 ;; e.g. we use "https://www.inex.ie/ixp/" here
 identity.url = "https://www.example.com/ixp/"
 
+;; e.g. we use "https://www.inex.ie" here
+identity.urlbase = "https://www.example.com"
+
 ;; PLEASE USE YOU OWN LOGO HERE!!!
 identity.logo = APPLICATION_PATH "/../public/images/inex-logo-150x73.jpg"
 
@@ -273,38 +335,130 @@ identity.misc.irc_password = "xxx"
 ;; defines the default LAN on some pages and reflects the id column of the vlan table.
 identity.vlans.default = 1
 
+; Used to set the default country in various forms (use two letter format)
+identity.default_country = 'IE'
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; Peering Manager
+;;
+;; See: https://github.com/inex/IXP-Manager/wiki/Peering-Manager
+;;
+;; The Peering Manager allows your members to send peering requests to other members
+;; that contain all the necessary peering details.
+;;
+;; For testing / experimentation you can enabled test mode below and, when enabled, all
+;; peering requests will be sent to the testemail. 
+;;
+;; NB: This does not apply to any BCC emails you add. The CC recipient in the request
+;; dialog will be ignored in test mode.
+;;
+;; Normally, the peering manager adds a note to the peer's notes and sets a request last 
+;; sent date when a peering request is sent. In test mode, this will not happen. 
+;; If you want this to happen in test mode, set testnote and testdate to true below.
+;;
+
+peeringmanager.testmode = false
+peeringmanager.testemail = "user@example.com"
+peeringmanager.testnote = false
+peeringmanager.testdate = false
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; MRTG Details
 ;;
-;; This is poorly documented but we will endeavour to do a better
-;; job of ut
+;; See: https://github.com/inex/IXP-Manager/wiki/MRTG---Traffic-Graphs
 ;;
 
-;; For displaying graphs, we normally get the PNG (or RRD) file from a
-;; secure backend server using HTTP. We use file_get_contents() so you
-;; can use various URIs here including local file system:
+;; the following mrtg.conf variables are used by the MRTG configuration generator.
+;;
+;; destination for all MRTG output (log files, pngs, etc)
+mrtg.conf.workdir = '/home/mrtg'
+;; destintation file for the MRTG configuration. If not set, the generator sends it to stdout
+;mrtg.conf.dstfile = '/tmp/mrtg.cfg'
 
-;; This is for standard interface graphs
-mrtg.path = http://mrtg.example.com/mrtg
 
-;; This is for P2P graphs (which are a work in progress)
-mrtg.p2ppath = http://mrtg.example.com/sflow/sflow-graph.php
-
-;; We have publically available overall graphs which are defined here
-;; FIXME Documentation needed..
-mrtg.traffic_graphs[] = "aggregate::Aggregate Graphs"
-mrtg.traffic_graphs[] = "network1::Infrastructure #1"
-mrtg.traffic_graphs[] = "network2::Infrastructure #2"
+;; We support aggregate IXP and aggregate infrastructure graphs assuming you
+;; have set up MRTG to support these. 
+;;
+;; See: https://github.com/inex/IXP-Manager/wiki/MRTG---Traffic-Graphs
 
 ;; We also show intra-switch graphs
-;; FIXME Documentation needed..
-mrtg.trunk_graphs[] = "core-sw1-sw2-lan1::PoP 1 to PoP 2 (LAN1)"
-mrtg.trunk_graphs[] = "core-sw1-sw3-lan1::PoP 1 to PoP 3 (LAN1)"
+;; See: https://github.com/inex/IXP-Manager/wiki/MRTG---Traffic-Graphs
+;;
+;; Reference:  mrtg.trunk_graphs[] = "{$ixpid}::{$graph_file_name}::{$graph_title}"
+;
+;mrtg.trunk_graphs[] = "1::core-sw1-sw2-lan1::PoP 1 to PoP 2 (LAN1)"
+;mrtg.trunk_graphs[] = "1::core-sw1-sw3-lan1::PoP 1 to PoP 3 (LAN1)"
 ;; ...
 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; Smokeping Details
+;;
+;; See: https://github.com/inex/IXP-Manager/wiki/Smokeping
+;;
+
+;; the following mrtg.conf variables are used by the Smokeping configuration generator.
+;;
+;; See also: http://oss.oetiker.ch/smokeping/doc/smokeping_config.en.html
+
+;; destintation file for the configuration. If not set, the generator sends it to stdout
+;smokeping.conf.dstfile = '/etc/smokeping/config'
+
+;; Complete URL path of the SmokePing.cgi (mandatory)
+smokeping.conf.cgiurl = "https://www.example.com/smokeping/smokeping.cgi"
+
+;; A directory which is visible on your webserver where SmokePing can cache graphs. (mandatory)
+smokeping.conf.imgcache = "/usr/local/smokeping/htdocs/img"
+
+;; Either an absolute URL to the imgcache directory or one relative to the directory where you keep the SmokePing cgi. (mandatory)
+smokeping.conf.imgurl = "/smokeping/img"
+
+;; The directory where SmokePing can keep its rrd files. (mandatory)
+smokeping.conf.datadir = "/usr/local/var/smokeping"
+
+;; The directory where SmokePing keeps its pid when daemonised. (mandatory)
+smokeping.conf.piddir = "/usr/local/var/smokeping"
+
+;; Path to the mail template for DYNAMIC hosts. This mail template must contain keywords of the 
+;; form <##keyword##>. There is a sample template included with SmokePing. (mandatory)
+smokeping.conf.smokemail = "/usr/local/etc/smokeping/smokemail"
+
+;; Smokeping typically includess a file with paths to various executables 
+;; Set the full path and filename for that include here if you wish
+smokeping.conf.pathnames = "/etc/smokeping/config.d/pathnames"
+
+;; The above cover all the mandatory settings. You can add other options as follows and
+;; they will be included in the general section of the Smokeping config.
+
+smokeping.oconf.tmail = "/usr/local/etc/smokeping/tmail"
+smokeping.oconf.syslogfacility = "local0"
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; Route Collector / Server Details
+;;
+;; See: https://github.com/inex/IXP-Manager/wiki/Route-Collector
+;;
+
+;router.collector.conf.target = "quagga"
+;router.collector.conf.dstpath = APPLICATION_PATH "/../var/spool"
+
+; Used by nagios-cli.gen-members-conf action to monitor route collector BGP sessions
+;router.collector.conf.snmppasswd = 'xxxx'
+
+;irrdb.bgpq.path = '/path/to/bgpq3'
+
+; sflow parameters (peer to peer graphs)
+sflow.enabled = true
+sflow.rootdir = /path/to/rrd/files
+sflow.rrd.rrdtool = /usr/bin/rrdtool
+sflow.rrd.rrdcached.sock = unix:/var/run/rrdcached.sock
 
 ;; LANs available for public and member's own peering matrix.
 
@@ -318,6 +472,10 @@ peering_matrix.public.1.number = 120
 ; details for the primary / only / main peering LAN
 primary_peering_lan.vlan_tag = 100
 
+
+; The URL used to display PeeringDB entries.
+; %ASN% is replaced with the customer's ASN
+peeringdb.url = "https://www.peeringdb.com/view.php?asn=%ASN%"
 
 
 ;; Mailing List Subscription Management Facility
@@ -345,9 +503,9 @@ mailinglist.cmd.changepw       = "/usr/local/mailman/bin/withlist -q -l -r chang
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
-;; IXP Tool / CLI Settings
+;; IXP Tool / Statistics CLI Settings
 ;;
-;; We have a few useful tools which also need better documentation.
+;; See: https://github.com/inex/IXP-Manager/wiki/Email-Notifications
 ;;
 
 cli.traffic_differentials.stddev_calc_length = 60
@@ -364,7 +522,20 @@ cli.port_utilisation.subject = "XXX Port Utilisation Report"
 cli.port_utilisation.recipients[] = "someone@example.com"
 cli.port_utilisation.recipients[] = "someone-else@example.com"
 
+; note that the %s in the subject below is replaced with Errors / Discards as appropriate by the script 
+cli.ports_with_counts.from_email = "ops@example.com"
+cli.ports_with_counts.from_name  = "IXP Operations"
+cli.ports_with_counts.subject = "IXP - Ports with %s"
+cli.ports_with_counts.recipients[] = "someone@example.com"
+cli.ports_with_counts.recipients[] = "someone-else@example.com"
 
+; the traffic_daily table can get pretty full and most of the long term information
+; are in the MRTG / other stats files anyway. If you want to keep this data in the
+; database, set the following to false. If it's true, when the daily task runs
+; to populate this table, it will also delete any entries older than
+; cli.traffic_differentials.stddev_calc_length days (this parameter is set above).
+
+cli.traffic_daily.delete_old = true
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -377,7 +548,24 @@ cli.port_utilisation.recipients[] = "someone-else@example.com"
 meeting.rsvp_to_email = "rsvp@example.com"
 meeting.rsvp_to_name  = "Person Who Looks After This Stuff"
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Billing updates notifications
+;;
+;; Send email with updated billing details to the following address when billing details
+;; are updated by and admin or a user.
+;;
 
+; billing_updates.notify = "accounts1@example.com"
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; Generated RIR objects
+;;
+;; See: https://github.com/inex/IXP-Manager/wiki/RIR-Objects
+;;
+
+;rir.ripe_password = 'supersecret'
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -396,7 +584,58 @@ weathermap.1.height = 1200
 ; ...
 
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Network Information default properties
+;;
+;; The below defines the default key / value pairs allowable
+;; in the VLAN network information editor within IXP Manager
+;; 
+;; Feel free to customise for your own IXP.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+; Subnet size of the network (e.g. 23, 24, 25 for IPv4 or 64 for IPv6)
+; This is also defined as a 'singleton' meaning only one of these properties
+; is allowed per VLAN and protocol
+netinfo.property.masklen.name = "Subnet Size"
+netinfo.property.masklen.singleton = true
+
+; Define route servers available as well as their types from a predefined list
+netinfo.property.routeserver.name = "Route Server"
+; multiple route servers allowed for each vlan/protocol 
+netinfo.property.routeserver.singleton = false
+; when there are two (or more) properties, indicate which one to display in the table
+netinfo.property.routeserver.display = "ipaddress"
+netinfo.property.routeserver.properties.ipaddress = "IP Address"
+; value arrays translate to a select dropdown in the UI
+netinfo.property.routeserver.properties.type.name = "Type"
+netinfo.property.routeserver.properties.type.values[] = 'Quagga (std)'
+netinfo.property.routeserver.properties.type.values[] = 'Quagga (EuroIX)'
+netinfo.property.routeserver.properties.type.values[] = 'Bird'
+netinfo.property.routeserver.properties.type.values[] = 'OpenBGPd'
+
+; Note that singleton is the default. We use the below to write out
+; reverse DNS / ARPA entries
+netinfo.property.dnsfile.name = "Reverse DNS File" 
+
+; We have an AS112 service - this defines its IP address(es)
+netinfo.property.as112server.name = "AS112 Server"
+netinfo.property.as112server.singleton = false
+
+; We have one route collector - this defines its IP address
+netinfo.property.routecollector.name = "Route Collector"
+netinfo.property.routecollector.singleton = false
+
+; Servers / hosts we tolerate echo requests to for members to test
+netinfo.property.pingbeacon.name = "Ping Beacon"
+netinfo.property.pingbeacon.singleton = false
+netinfo.property.pingbeacon.properties.ipaddress = "IP Address"
+netinfo.property.pingbeacon.properties.ratelimited = "Rate Limited"
+; Help messages are displayed on the UI data entry dialog:
+netinfo.property.pingbeacon.help = "If this ping beacon is not rate limited, just enter 'No'. If it is, provide details of the rate limiting so the end user may know how many pings / sec they can push at this box."
+    
+    
+    
+    
 [staging : production]
 
 ;; if you want to set up a staging environment with a different database.

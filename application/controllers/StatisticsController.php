@@ -1,7 +1,7 @@
 <?php
 
 /*
- * Copyright (C) 2009-2012 Internet Neutral Exchange Association Limited.
+ * Copyright (C) 2009-2013 Internet Neutral Exchange Association Limited.
  * All Rights Reserved.
  *
  * This file is part of IXP Manager.
@@ -26,27 +26,116 @@
  * Controller: Statistics / graphs
  *
  * @author     Barry O'Donovan <barry@opensolutions.ie>
- * @category   INEX
- * @package    INEX_Controller
- * @copyright  Copyright (c) 2009 - 2012, Internet Neutral Exchange Association Ltd
+ * @category   IXP
+ * @package    IXP_Controller
+ * @copyright  Copyright (c) 2009 - 2013, Internet Neutral Exchange Association Ltd
  * @license    http://www.gnu.org/licenses/gpl-2.0.html GNU GPL V2.0
  */
-class StatisticsController extends INEX_Controller_AuthRequiredAction
+class StatisticsController extends IXP_Controller_AuthRequiredAction
 {
-
-    public function preDispatch()
-    {}
+    use IXP_Controller_Trait_Statistics;
+    
 
     
     public function listAction()
     {
         $this->assertPrivilege( \Entities\User::AUTH_SUPERUSER, true );
-        $this->view->custs = $this->getD2EM()->getRepository( '\\Entities\\Customer')->getCurrentActive( true, true, true );
+
+        $this->setIXP();
+        $this->setInfrastructure();
+        
+        $this->view->custs = $custs = $this->getD2R( '\\Entities\\Customer')->getCurrentActive( false, true, false, $this->ixp );
+        
+        if( !is_string( $this->infra ) && $this->infra )
+            $this->view->custs = $this->getD2R( '\\Entities\\Customer')->filterForInfrastructure( $custs, $this->infra );
     }
+
+    public function membersAction()
+    {
+        $this->assertPrivilege( \Entities\User::AUTH_SUPERUSER, true );
+    
+        $this->setIXP();
+        $this->setInfrastructure();
+        $this->setCategory();
+        $this->setPeriod();
+        
+        $this->view->custs = $custs = $this->getD2R( '\\Entities\\Customer')->getCurrentActive( false, true, false, $this->ixp );
+        
+        if( !is_string( $this->infra ) && $this->infra )
+            $this->view->custs = $this->getD2R( '\\Entities\\Customer')->filterForInfrastructure( $custs, $this->infra );
+    }
+    
+    public function memberAction()
+    {
+        $cust = $this->view->cust = $this->resolveCustomerByShortnameParam(); // includes security checks
+        $this->setIXP( $cust );
+        $this->setCategory();
+    }
+    
+    public function memberDrilldownAction()
+    {
+        $category = $this->setCategory();
+        $this->view->monitorindex = $monitorindex = $this->getParam( 'monitorindex', 1 );
+    
+        $cust = $this->view->cust = $this->resolveCustomerByShortnameParam(); // includes security checks
+        
+        $this->setIXP( $cust );
+        
+        if( $monitorindex != 'aggregate' )
+        {
+            $vint = false;
+            $pi = null;
+            foreach( $cust->getVirtualInterfaces() as $vi )
+            {
+                foreach( $vi->getPhysicalInterfaces() as $pi )
+                {
+                    if( $pi->getMonitorindex() == $monitorindex )
+                    {
+                        $this->view->pi   = $pi;
+                        $this->view->vint = $vint = $vi;
+                        break 2;
+                    }
+                }
+            }
+    
+            if( !$vint )
+                throw new IXP_Exception( 'Member statistics drilldown requested for unknown monitor index' );
+    
+            $this->view->switchname = $pi->getSwitchPort()->getSwitcher()->getName();
+            $this->view->portname   = $pi->getSwitchPort()->getName();
+        }
+        else
+        {
+            $this->view->switchname = '';
+            $this->view->portname   = '';
+        }
+    
+        $this->view->periods      = IXP_Mrtg::$PERIODS;
+    
+        $stats = array();
+        foreach( IXP_Mrtg::$PERIODS as $period )
+        {
+            $mrtg = new IXP_Mrtg(
+                    IXP_Mrtg::getMrtgFilePath( $this->ixp->getMrtgPath() . '/members', 'LOG', $monitorindex, $category, $cust->getShortname() )
+            );
+    
+            $stats[$period] = $mrtg->getValues( $period, $this->view->category );
+        }
+        $this->view->stats     = $stats;
+    
+        if( $this->getParam( 'mini', false ) )
+        {
+            Zend_Controller_Action_HelperBroker::removeHelper( 'viewRenderer' );
+            $this->view->display( 'statistics/member-drilldown-mini.phtml' );
+        }
+    }
+    
     
     public function leagueTableAction()
     {
         $this->assertPrivilege( \Entities\User::AUTH_SUPERUSER, true );
+        
+        $this->setIXP();
         
         $this->view->metrics = $metrics = [
             'Total'   => 'data',
@@ -64,49 +153,86 @@ class StatisticsController extends INEX_Controller_AuthRequiredAction
             $day = date( 'Y-m-d' );
         $this->view->day = $day = new \DateTime( $day );
         
-        $category = $this->_setCategory();
+        $category = $this->setCategory();
                 
-        $this->view->trafficDaily = $this->getD2EM()->getRepository( '\\Entities\\TrafficDaily' )->load( $day, $category );
+        $this->view->trafficDaily = $this->getD2EM()->getRepository( '\\Entities\\TrafficDaily' )->load( $day, $category, $this->ixp );
     }
     
     
     public function publicAction()
     {
         // get the available graphs
-        foreach( $this->_options['mrtg']['traffic_graphs'] as $g )
+        $ixps = $this->getD2R( '\\Entities\\IXP' )->findAll();
+        
+        $graphs = [];
+        foreach( $ixps as $ixp )
         {
-            $p = explode( '::', $g );
-            $graphs[$p[0]] = $p[1];
-            $images[]      = $p[0];
+            if( $ixp->getAggregateGraphName() )
+            {
+                $graphs[ $ixp->getShortname() ]['name']  = $ixp->getAggregateGraphName();
+                $graphs[ $ixp->getShortname() ]['title'] = ( $this->multiIXP() ? $ixp->getShortname() . ' - ' : ' ' ) . 'Aggregate';
+                $graphs[ $ixp->getShortname() ]['mrtg']  = $ixp->getMrtgPath();
+            }
+                
+            foreach( $ixp->getInfrastructures() as $inf )
+            {
+                if( $inf->getAggregateGraphName() )
+                {
+                    $graphs[ $ixp->getShortname() . '_' . $inf->getId() ]['name']  = $inf->getAggregateGraphName();
+                    $graphs[ $ixp->getShortname() . '_' . $inf->getId() ]['title'] = ( $this->multiIXP() ? $ixp->getShortname() . ' - ' : ' ' ) . $inf->getName();
+                    $graphs[ $ixp->getShortname() . '_' . $inf->getId() ]['mrtg']  = $ixp->getMrtgPath();
+                }
+            }
         }
+        
+        if( !count( $graphs ) )
+        {
+            $this->addMessage(
+                "Aggregate graphs have not been configured. Please see <a href=\"https://github.com/inex/IXP-Manager/wiki/MRTG---Traffic-Graphs\">this documentation</a> for instructions.",
+                OSS_Message::ERROR
+            );
+            $this->redirect();
+        }
+        
         $this->view->graphs     = $graphs;
         
-        $graph = $this->getParam( 'graph', $images[0] );
-        if( !in_array( $graph, $images ) )
-            $graph = $images[0];
+        $graph = $this->getParam( 'graph', array_keys( $graphs )[0] );
+        if( !isset( $graphs[ $graph ] ) )
+            $graph = array_keys( $graphs )[0];
         $this->view->graph      = $graph;
         
-        $category = $this->_setCategory();
-    
+        $category = $this->setCategory( 'category', true );
+
         $stats = array();
-        foreach( INEX_Mrtg::$PERIODS as $period )
+        foreach( IXP_Mrtg::$PERIODS as $period )
         {
-            $mrtg = new INEX_Mrtg( $this->_options['mrtg']['path'] . '/ixp_peering-' . $graph . '-' . $category . '.log' );
+            $mrtg = new IXP_Mrtg(
+                $graphs[ $graph ][ 'mrtg' ] . '/ixp_peering-' . $graphs[ $graph ][ 'name' ] . '-' . $category . '.log' );
             $stats[$period] = $mrtg->getValues( $period, $category );
         }
-        $this->view->stats      = $stats;
         
-        $this->view->periods    = INEX_Mrtg::$PERIODS;
+        $this->view->stats      = $stats;
+        $this->view->periods    = IXP_Mrtg::$PERIODS;
     }
     
     public function trunksAction()
     {
+        if( !isset( $this->_options['mrtg']['trunk_graphs'] ) || !is_array( $this->_options['mrtg']['trunk_graphs'] ) || !count( $this->_options['mrtg']['trunk_graphs'] ) )
+        {
+            $this->addMessage(
+                "Aggregate graphs have not been configured. Please see <a href=\"https://github.com/inex/IXP-Manager/wiki/MRTG---Traffic-Graphs\">this documentation</a> for instructions.",
+                OSS_Message::ERROR
+            );
+            $this->redirect();
+        }
+                                                                                                
         // get the available graphs
         foreach( $this->_options['mrtg']['trunk_graphs'] as $g )
         {
             $p = explode( '::', $g );
-            $graphs[$p[0]] = $p[1];
-            $images[]      = $p[0];
+            $ixpid         = $p[0];
+            $images[]      = $p[1];
+            $graphs[$p[1]] = $p[2];
         }
         $this->view->graphs  = $graphs;
         
@@ -114,131 +240,62 @@ class StatisticsController extends INEX_Controller_AuthRequiredAction
         if( !in_array( $graph, $images ) )
             $graph = $images[0];
         $this->view->graph   = $graph;
+
+        // load the IXP
+        $ixp = $this->loadIxpById( $ixpid );
         
         $stats = array();
-        foreach( INEX_Mrtg::$PERIODS as $period )
+        foreach( IXP_Mrtg::$PERIODS as $period )
         {
-            $mrtg = new INEX_Mrtg( $this->_options['mrtg']['path'] . '/trunks/' . $graph . '.log' );
-            $stats[$period] = $mrtg->getValues( $period, INEX_Mrtg::CATEGORY_BITS );
+            $mrtg = new IXP_Mrtg( $ixp->getMrtgPath() . '/trunks/' . $graph . '.log' );
+            $stats[$period] = $mrtg->getValues( $period, IXP_Mrtg::CATEGORY_BITS );
         }
         $this->view->stats   = $stats;
         
-        $this->view->periods = INEX_Mrtg::$PERIODS;
+        $this->view->periods = IXP_Mrtg::$PERIODS;
     }
     
     public function switchesAction()
     {
-        $switches = $this->view->switches
-            = $this->getD2EM()->getRepository( '\\Entities\\Switcher' )->getNames( true, \Entities\Switcher::TYPE_SWITCH );
+        $eSwitches = $this->getD2EM()->getRepository( '\\Entities\\Switcher' )->getAndCache( true, \Entities\Switcher::TYPE_SWITCH );
     
+        $switches = [];
+        foreach( $eSwitches as $s )
+        {
+            // if we're not doing infrastructure aggregates, we're probably not doing swicth aggregates:
+            if( $s->getInfrastructure()->getAggregateGraphName() )
+            {
+                $switches[ $s->getId() ][ 'name' ] = $s->getName();
+                $switches[ $s->getId() ][ 'mrtg' ] = $s->getInfrastructure()->getIXP()->getMrtgPath();
+            }
+        }
+        
+        $this->view->switches = $switches;
+        
         $switch = $this->getParam( 'switch', array_keys( $switches )[0] );
         if( !in_array( $switch, array_keys( $switches ) ) )
             $switch = array_keys( $switches )[0];
         $this->view->switch     = $switch;
         
-        $category = $this->_setCategory();
-        $this->_setPeriod();
+        $category = $this->setCategory();
+        
+        // override allowed categories as some aren't available here
+        $this->view->categories = IXP_Mrtg::$CATEGORIES_AGGREGATE;
+        
+        $this->setPeriod();
         
         $stats = array();
-        foreach( INEX_Mrtg::$PERIODS as $period )
+        
+        foreach( IXP_Mrtg::$PERIODS as $period )
         {
-            $mrtg = new INEX_Mrtg(
-                $this->_options['mrtg']['path'] . '/switches/' . 'switch-aggregate-'
-                    . $switches[$switch] . '-' . $category . '.log'
+            $mrtg = new IXP_Mrtg(
+                $switches[ $switch ][ 'mrtg' ] . '/switches/' . 'switch-aggregate-'
+                    . $switches[ $switch ][ 'name' ] . '-' . $category . '.log'
             );
     
             $stats[$period] = $mrtg->getValues( $period, $category );
         }
         $this->view->stats      = $stats;
-        
-    }
-    
-    
-    public function membersAction()
-    {
-        $this->assertPrivilege( \Entities\User::AUTH_SUPERUSER, true );
-        
-        $this->view->infras = $infras = INEX_Mrtg::$INFRASTRUCTURES_TEXT;
-        $this->view->infra  = $infra  = $this->getParam( 'infra', 'aggregate' );
-
-        if( $infra != 'aggregate' && !in_array( $infra, $infras ) )
-            $infra = 'aggregate';
-        
-        $this->_setCategory();
-        $this->_setPeriod();
-        $this->view->custs = $this->getD2EM()->getRepository( '\\Entities\\Customer' )->getCurrentActive( false, true, true );
-    }
-    
-    public function memberAction()
-    {
-        if( $this->getUser()->getPrivs() < \Entities\User::AUTH_SUPERUSER )
-            $shortname = $this->getCustomer()->getShortname();
-        else
-            $shortname = $this->getParam( 'shortname', $this->getCustomer()->getShortname() );
-    
-        $this->view->cust = $cust = $this->loadCustomerByShortname( $shortname );  // redirects on failure
-        
-        $this->_setCategory();
-    }
-    
-    public function memberDrilldownAction()
-    {
-        $category = $this->_setCategory();
-        $this->view->monitorindex = $monitorindex = $this->getParam( 'monitorindex', 1 );
-        
-        if( $this->getUser()->getPrivs() != \Entities\User::AUTH_SUPERUSER )
-            $shortname = $this->getCustomer()->getShortname();
-        else
-            $shortname = $this->getParam( 'shortname', $this->getCustomer()->getShortname() );
-    
-        $this->view->cust = $cust = $this->loadCustomerByShortname( $shortname );  // redirects on failure
-    
-        if( $monitorindex != 'aggregate' )
-        {
-            $vint = false;
-            $pi = null;
-            foreach( $this->getCustomer()->getVirtualInterfaces() as $vi )
-            {
-                foreach( $vi->getPhysicalInterfaces() as $pi )
-                {
-                    if( $pi->getMonitorindex() == $monitorindex )
-                    {
-                        $vint = $vi;
-                        break 2;
-                    }
-                }
-            }
-            
-            if( !$vint )
-                throw new INEX_Exception( 'Member statistics drilldown requested for unknown monitor index' );
-    
-            $this->view->switchname = $pi->getSwitchPort()->getSwitcher()->getName();
-            $this->view->portname   = $pi->getSwitchPort()->getName();
-        }
-        else
-        {
-            $this->view->switchname = '';
-            $this->view->portname   = '';
-        }
-    
-        $this->view->periods      = INEX_Mrtg::$PERIODS;
-    
-        $stats = array();
-        foreach( INEX_Mrtg::$PERIODS as $period )
-        {
-            $mrtg = new INEX_Mrtg(
-                INEX_Mrtg::getMrtgFilePath( $this->_options['mrtg']['path'] . '/members', 'LOG', $monitorindex, $category, $cust->getShortname() )
-            );
-    
-            $stats[$period] = $mrtg->getValues( $period, $this->view->category );
-        }
-        $this->view->stats     = $stats;
-    
-        if( $this->_request->getParam( 'mini', false ) )
-        {
-            Zend_Controller_Action_HelperBroker::removeHelper( 'viewRenderer' );
-            $this->view->display( 'statistics/member-drilldown-mini.phtml' );
-        }
     }
     
     /**
@@ -246,190 +303,47 @@ class StatisticsController extends INEX_Controller_AuthRequiredAction
      */
     public function p2pAction()
     {
-        if( $this->getUser()->getPrivs() != \Entities\User::AUTH_SUPERUSER )
-            $shortname = $this->getCustomer()->getShortname();
-        else
-            $shortname = $this->getParam( 'shortname', $this->getCustomer()->getShortname() );
-    
-        $this->view->cust = $cust = $this->loadCustomerByShortname( $shortname );  // redirects on failure
-
-        $category = $this->_setCategory();
-        $period   = $this->_setPeriod();
-        $infra    = $this->_setInfrastructure();
-        $proto    = $this->_setProtocol();
-        $dvid     = $this->view->dvid = $this->getParam( 'dvid', false );
-    
-        // find the possible virtual interfaces that this customer peers with
-        $vints = [];
-        foreach( $cust->getVirtualInterfaces() as $vi )
-        {
-            $enabled = false;
-            foreach( $vi->getVlanInterfaces() as $vli )
-            {
-                $fn = "getIpv{$proto}enabled";
-                if( $vli->$fn() )
-                {
-                    $enabled = true;
-                    break;
-                }
-            }
-            
-            if( !$enabled )
-                continue;
-            
-            foreach( $vi->getPhysicalInterfaces() as $pi )
-            {
-                if( $pi->getSwitchPort()->getSwitcher()->getInfrastructure() == $infra )
-                    $vints[ $vi->getId() ] = $vi;
-            }
-        }
-            
-        $this->view->vints = $vints;
-        $this->view->customersWithVirtualInterfaces = false;
+        $cust = $this->view->cust = $this->resolveCustomerByShortnameParam(); // includes security checks
         
-        if( count( $vints ) )
+        $this->setIXP( $cust );
+        $category = $this->setCategory( 'category', false );
+        $period   = $this->setPeriod();
+        $proto    = $this->setProtocol();
+        
+        // Find the possible VLAN interfaces that this customer has for the given IXP
+        if( !count( $srcVlis = $this->view->srcVlis = $this->getD2R( '\\Entities\\VlanInterface' )->getForCustomer( $cust, $this->ixp ) ) )
         {
-            if( count( $vints ) > 1 )
-            {
-                $interfaces = array();
-                foreach( $vints as $vi )
-                    $interfaces[] = $vi->getId();
-    
-                $interface = $this->view->interface = $this->getParam( 'interface', $interfaces[0] );
-                if( !in_array( $interface, $interfaces ) )
-                    $interface = $this->view->interface = $interfaces[0];
-    
-                $this->view->svid = $interface;
-            }
-            else
-                $this->view->svid = $vints[ ( array_keys( $vints )[0] ) ]->getId();
-    
-            // find the possible virtual interfaces that this customer peers with
-            $dql = "SELECT c.id AS cid, c.name AS cname, c.shortname AS cshortname,
-                        vi.id AS viid, pi.id AS piid, vli.id AS vlidid, sp.id AS spid, s.id AS sid
-            
-                    FROM \\Entities\\Customer c
-                        LEFT JOIN c.VirtualInterfaces vi
-                        LEFT JOIN vi.PhysicalInterfaces pi
-                        LEFT JOIN vi.VlanInterfaces vli
-                        LEFT JOIN pi.SwitchPort sp
-                        LEFT JOIN sp.Switcher s
-                        
-                    WHERE
-                        s.infrastructure = {$infra}
-                        AND vli.ipv{$proto}enabled = 1
-                        AND c.shortname != ?1
-                        AND c.type IN ( " . \Entities\Customer::TYPE_FULL . ", " . \Entities\Customer::TYPE_PROBONO . " )
-                        AND c.status = " . \Entities\Customer::STATUS_NORMAL . "
-                        AND ( c.dateleave IS NULL OR c.dateleave = '0000-00-00' )
-                        AND pi.status = " . \Entities\PhysicalInterface::STATUS_CONNECTED;
-                        
-            
-    
-            if( $dvid )
-                $dql .= " AND WHERE vi.id = {$dvid}";
-            
-            $dql .= "  ORDER BY c.name";
-            
-           
-            $q  = $this->getD2EM()->createQuery( $dql )->setParameter( 1, $shortname );
-            
-            $this->view->customersWithVirtualInterfaces = $q->getArrayResult();
+            $this->addMessage( 'There were no interfaces available for the given criteria. Returning to default view.' );
+            $this->redirect( 'statistics/p2p' );
         }
-    
-        if( $dvid )
+
+        if( ( $svlid = $this->getParam( 'svli', false ) ) && isset( $srcVlis[ $svlid ] ) )
+            $this->view->srcVli = $srcVli = $srcVlis[ $svlid ];
+        else
+            $this->view->srcVli = $srcVli = $srcVlis[ array_keys( $srcVlis )[0] ];
+        
+        // Now find the possible other VLAN interfaces that this customer could exchange traffic with
+        // (as well as removing the source vli)
+        $dstVlis = $this->getD2R( '\\Entities\\VlanInterface' )->getObjectsForVlan( $srcVli->getVlan() );
+        unset( $dstVlis[ $srcVli->getId() ] );
+        $this->view->dstVlis = $dstVlis;
+        
+        if( !count( $dstVlis ) )
+        {
+            $this->addMessage( 'There were no other interfaces available for traffic exchange for the given criteria. Returning to default view.' );
+            $this->redirect( 'statistics/p2p' );
+        }
+
+        if( ( $dvlid = $this->getParam( 'dvli', false ) ) && isset( $dstVlis[ $dvlid ] ) )
+            $this->view->dstVli = $dstVli = $dstVlis[ $dvlid ];
+        else
+            $this->view->dstVli = $dstVli = false;
+        
+        if( $dstVli )
         {
             Zend_Controller_Action_HelperBroker::removeHelper( 'viewRenderer' );
             $this->view->display( 'statistics/p2p-single.phtml' );
         }
     }
-    
-    /**
-     * Utility function to extract, validate (and default if necessary) a
-     * category from request parameters.
-     *
-     * Sets the view variables `$category` to the chosen / defaulted category
-     * and `$categories` to all available categories.
-     *
-     * @param string $pname The name of the parameter to extract the category from
-     * @return string The chosen / defaulted category
-     */
-    protected function _setCategory( $pname = 'category' )
-    {
-        $category = $this->getParam( $pname, INEX_Mrtg::$CATEGORIES['Bits'] );
-        if( !in_array( $category, INEX_Mrtg::$CATEGORIES ) )
-            $category = INEX_Mrtg::$CATEGORIES['Bits'];
-        $this->view->category   = $category;
-        $this->view->categories = INEX_Mrtg::$CATEGORIES;
-        return $category;
-    }
-    
-    /**
-     * Utility function to extract, validate (and default if necessary) a
-     * period from request parameters.
-     *
-     * Sets the view variables `$period` to the chosen / defaulted category
-     * and `$periods` to all available periods.
-     *
-     * @param string $pname The name of the parameter to extract the period from
-     * @return string The chosen / defaulted period
-     */
-    protected function _setPeriod( $pname = 'period' )
-    {
-        $period = $this->getParam( $pname, INEX_Mrtg::$PERIODS['Day'] );
-        if( !in_array( $period, INEX_Mrtg::$PERIODS ) )
-            $period = INEX_Mrtg::$PERIODS['Day'];
-        $this->view->period     = $period;
-        $this->view->periods    = INEX_Mrtg::$PERIODS;
-        return $period;
-    }
-    
-    /**
-     * Utility function to extract, validate (and default if necessary) an
-     * infrastructure from request parameters.
-     *
-     * Sets the view variables `$infra` to the chosen / defaulted infrastructure
-     * and `$infrastructures` to all available infrastructures.
-     *
-     * @param string $pname The name of the parameter to extract the infrastructure from
-     * @return string The chosen / defaulted infrastructure
-     */
-    protected function _setInfrastructure( $pname = 'infra' )
-    {
-        $infra = $this->view->infra = $this->getParam( $pname, 1 );
-        if( !in_array( $infra, INEX_Mrtg::$INFRASTRUCTURES ) )
-            $infra = INEX_Mrtg::INFRASTRUCTURE_PRIMARY;
-        
-        $this->view->infra      = $infra;
-        $this->view->infrastructures = INEX_Mrtg::$INFRASTRUCTURES;
-        
-        return $infra;
-    }
-    
-    
-    /**
-     * Utility function to extract, validate (and default if necessary) a
-     * protocol from request parameters.
-     *
-     * Sets the view variables `$proto` to the chosen / defaulted protocol
-     * and `$protocols` to all available protocols.
-     *
-     * @param string $pname The name of the parameter to extract the protocol from
-     * @return string The chosen / defaulted protocol
-     */
-    protected function _setProtocol( $pname = 'proto' )
-    {
-        $proto = $this->getParam( $pname, 4 );
-        if( !in_array( $proto, INEX_Mrtg::$PROTOCOLS ) )
-            $proto = INEX_Mrtg::PROTOCOL_IPV4;
-        
-        $this->view->proto     = $proto;
-        $this->view->protocols = INEX_Mrtg::$PROTOCOLS;
-            
-        return $proto;
-    }
-    
-    
-
 }
 

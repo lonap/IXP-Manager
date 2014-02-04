@@ -26,12 +26,12 @@
  * Controller: Static pages
  *
  * @author     Barry O'Donovan <barry@opensolutions.ie>
- * @category   INEX
- * @package    INEX_Controller
+ * @category   IXP
+ * @package    IXP_Controller
  * @copyright  Copyright (c) 2009 - 2012, Internet Neutral Exchange Association Ltd
  * @license    http://www.gnu.org/licenses/gpl-2.0.html GNU GPL V2.0
  */
-class StaticController extends INEX_Controller_Action
+class StaticController extends IXP_Controller_Action
 {
 
 
@@ -40,23 +40,35 @@ class StaticController extends INEX_Controller_Action
         if( substr( $this->getRequest()->getActionName(), 0, 4 ) == 'auth' )
             $this->_requireAuth();
     }
-    
+
     private function _requireAuth( $priv = \Entities\User::AUTH_CUSTUSER )
     {
         if( !$this->getAuth()->hasIdentity() || $this->getUser()->getPrivs() < $priv )
         {
             if( $this->traitIsInitialised( 'OSS_Controller_Action_Trait_Messages' ) )
                 $this->addMessage( "Please login below.", OSS_Message::ERROR );
-        
+
             if( $this->traitIsInitialised( 'OSS_Controller_Action_Trait_Namespace' ) )
                 $this->getSessionNamespace()->postAuthRedirect = $this->getRequest()->getPathInfo();
-        
+
             $this->redirectAndEnsureDie( 'auth/login' );
         }
-        
-        
+
+
     }
-    
+
+    public function __call( $method, $args )
+    {
+        // FIXME Add options to enforce authentication based on name of page
+        // e,g, auth- or auth1/2/3-
+        
+        if( substr( $method, -6 ) != 'Action' )
+            throw new Zend_Exception( "Bad action in static controller" );
+
+        $method = substr( $method, 0, -6 );
+    }
+
+
     public function supportAction()
     {}
 
@@ -77,7 +89,7 @@ class StaticController extends INEX_Controller_Action
     {
         $this->_requireAuth();
     }
-    
+
     public function miscBenefitsAction()
     {
         $this->_requireAuth();
@@ -92,11 +104,11 @@ class StaticController extends INEX_Controller_Action
     {
         $this->_requireAuth();
     }
-    
+
     public function routeServersAction()
     {
         $this->_requireAuth();
-        
+
         // just find out if the user has route servers enabled or not
         $this->view->rsclient = false;
         foreach( $this->getCustomer()->getVirtualInterfaces() as $vi )
@@ -104,11 +116,11 @@ class StaticController extends INEX_Controller_Action
                 if( $vli->getRsclient() )
                     $this->view->rsclient = true;
     }
-    
+
     public function as112Action()
     {
         $this->_requireAuth();
-        
+
         // just find out if the user AS112 enabled or not
         $this->view->as112 = false;
         $this->view->rsclient = false;
@@ -122,8 +134,35 @@ class StaticController extends INEX_Controller_Action
                     $this->view->rsclient = true;
             }
         }
+        
+        // also get all available AS112 services
+        $as112services = [];
+        $i = 0;
+        
+        foreach( $this->getD2R( '\\Entities\\Vlan' )->findAll() as $v )
+        {
+            if( count( $as112s = $v->getAS112Servers( \Entities\Vlan::PROTOCOL_IPv4 ) ) )
+            {
+                foreach( $as112s as $as112 )
+                {
+                    $as112services[ $i ]['ip']    = $as112;
+                    $as112services[ $i ]['vlan']  = $v->getName();
+                    $as112services[ $i ]['infra'] = $v->getInfrastructure()->getName();
+                    $as112services[ $i ]['ixp']   = $v->getInfrastructure()->getIXP()->getName();
+                    $i++;
+                }
+            }
+        }
+        
+        if( !count( $as112services ) )
+        {
+            $this->addMessage( 'No AS112 servers defined in VLAN network information.', OSS_Message::ERROR );
+            $this->redirect();
+        }
+
+        $this->view->as112services = $as112services;
     }
-    
+
 }
 
 

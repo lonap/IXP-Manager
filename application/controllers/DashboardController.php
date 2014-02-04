@@ -25,12 +25,12 @@
  * Controller: Customer user dashboard and actions
  *
  * @author     Barry O'Donovan <barry@opensolutions.ie>
- * @category   INEX
- * @package    INEX_Controller
+ * @category   IXP
+ * @package    IXP_Controller
  * @copyright  Copyright (c) 2009 - 2012, Internet Neutral Exchange Association Ltd
  * @license    http://www.gnu.org/licenses/gpl-2.0.html GNU GPL V2.0
  */
-class DashboardController extends INEX_Controller_AuthRequiredAction
+class DashboardController extends IXP_Controller_AuthRequiredAction
 {
     
     public function preDispatch()
@@ -42,8 +42,10 @@ class DashboardController extends INEX_Controller_AuthRequiredAction
     public function indexAction()
     {
         // Get the three most recent members
-        $this->view->recentMembers = $this->getD2EM()->getRepository( '\\Entities\\Customer' )->getRecent( 3 );
+        $this->view->recentMembers = $this->getD2EM()->getRepository( '\\Entities\\Customer' )->getRecent();
 
+        $this->view->cust = $this->getUser()->getCustomer();
+        
         /*
             // is there a meeting available to register for?
             $this->view->meeting = false;
@@ -64,15 +66,26 @@ class DashboardController extends INEX_Controller_AuthRequiredAction
 
         if( !$this->getCustomer()->isTypeAssociate() )
         {
+            $this->view->resoldCustomer = $this->getCustomer()->isResoldCustomer();
             $this->view->netinfo = $this->getD2EM()->getRepository( '\\Entities\\NetworkInfo' )->asVlanProtoArray();
-	        $this->view->categories = INEX_Mrtg::$CATEGORIES;
+            $this->view->categories = IXP_Mrtg::$CATEGORIES;
 
-	        $this->getNocDetailsForm();
-	        $this->getBillingDetailsForm();
+            $this->getNocDetailsForm();
+            $this->getBillingDetailsForm();
+            
+            if( $this->getCustomer()->isRouteServerClient() )
+            {
+                $this->view->rsRoutes = $this->getD2EM()->getRepository( '\\Entities\\RSPrefix' )
+                ->aggregateRouteSummariesForCustomer( $this->getCustomer()->getId() );
+            }
         }
+
+        if( $this->multiIXP() )
+            $this->view->validIXPs = $this->getD2R( "\\Entities\\IXP" )->getNamesNotAssignedToCustomer( $this->getUser()->getCustomer()->getId() );
+        
+        // do we have any notes?
+        $this->_fetchCustomerNotes( $this->getCustomer()->getId(), true );
     }
-    
-    
     
     public function updateNocAction()
     {
@@ -97,7 +110,7 @@ class DashboardController extends INEX_Controller_AuthRequiredAction
     
     protected function getNocDetailsForm()
     {
-        $form = new INEX_Form_Customer_NocDetails();
+        $form = new IXP_Form_Customer_NocDetails();
         $form->assignEntityToForm( $this->getCustomer(), $this, true );
         $form->setAction( OSS_Utils::genUrl( 'dashboard', 'update-noc' ) );
         
@@ -116,9 +129,26 @@ class DashboardController extends INEX_Controller_AuthRequiredAction
         {
             if( $form->isValid( $_POST ) )
             {
-                $form->assignFormToEntity( $this->getCustomer(), $this, true );
+                if( $this->_options['billing_updates']['notify'] )
+                    $old = clone $this->getCustomer()->getBillingDetails();
+
+                $form->assignFormToEntity( $this->getCustomer()->getBillingDetails(), $this, true );
                 $this->getD2EM()->flush();
                 $this->addMessage( 'Your billing details have been updated', OSS_Message::SUCCESS );
+                
+                if( isset( $this->_options['billing_updates']['notify'] )  )
+                {
+                    $this->view->oldDetails = $old;
+                    $this->view->customer = $this->getCustomer();
+                    
+                    $this->getMailer()
+                        ->setFrom( $this->_options['identity']['email'], $this->_options['identity']['name'] )
+                        ->setSubject( $this->_options['identity']['sitename'] . ' - ' . _( 'Billing Details Change Notification' ) )
+                        ->addTo( $this->_options['billing_updates']['notify'] , $this->_options['identity']['sitename'] .' - Accounts' )
+                        ->setBodyHtml( $this->view->render( 'customer/email/billing-details-changed.phtml' ) )
+                        ->send();
+
+                }
             }
             else
             {
@@ -131,12 +161,12 @@ class DashboardController extends INEX_Controller_AuthRequiredAction
     
     protected function getBillingDetailsForm()
     {
-        $form = new INEX_Form_Customer_BillingDetails();
+        $form = new IXP_Form_Customer_BillingDetails();
         
         if( !isset( $this->view->billingDetails ) )
             $this->view->billingDetails = $form;
         
-        $form->assignEntityToForm( $this->getCustomer(), $this, true );
+        $form->assignEntityToForm( $this->getCustomer()->getBillingDetails(), $this, true );
         $form->setAction( OSS_Utils::genUrl( 'dashboard', 'update-billing' ) );
         return $form;
     }
