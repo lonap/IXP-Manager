@@ -145,8 +145,12 @@ foreach my $protocol (qw(4 6)) {
 	close (INPUT);
 
 	$dbh->do('START TRANSACTION') or die $dbh->errstr;
-                                   
-	foreach my $asn (@asnlist) {
+	
+        # dedupe asnlist:
+        my %seen = ();
+        my @uasnlist = grep { ! $seen{ $_ }++ } @asnlist;
+
+	foreach my $asn (@uasnlist) {
 		open (INPUT, '/usr/sbin/birdc -s '.$sockfile.' show route table t_' . $vliidhash{ $asn } . '_as'.$asn.' protocol pb_as'.$asn.' |');
 		while (<INPUT>) {
 			# 195.189.221.0/24   via 193.242.111.17 on vlan10 [pb_as2110 May17] * (100) [AS22711i]
