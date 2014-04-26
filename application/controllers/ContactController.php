@@ -129,11 +129,10 @@ class ContactController extends IXP_Controller_FrontEnd
                 c.facilityaccess AS facilityaccess, c.mayauthorize AS mayauthorize,
                 c.lastupdated AS lastupdated, c.lastupdatedby AS lastupdatedby, c.position AS position,
                 c.creator AS creator, c.created AS created, cust.name AS customer, cust.id AS custid,
-                u.id AS uid, g.name as gname'
+                u.id AS uid'
             )
             ->from( '\\Entities\\Contact', 'c' )
             ->leftJoin( 'c.User', 'u' )
-            ->leftJoin( 'c.Groups', 'g' )
             ->leftJoin( 'c.Customer', 'cust' );
 
         $roles = $this->getD2R( '\\Entities\\ContactGroup' )->getGroupNamesTypeArray( 'ROLE' );
@@ -143,7 +142,8 @@ class ContactController extends IXP_Controller_FrontEnd
             $this->view->roles = $roles = $roles['ROLE'];
             $this->view->role = $role = $this->getParam( 'role', false );
             if( isset( $roles[ $role ] ) )
-                $qb->andWhere( "g.id = :role" )->setParameter( 'role', $role );
+                $qb->leftJoin( 'c.Groups', 'g' )
+                   ->andWhere( "g.id = :role" )->setParameter( 'role', $role );
         }
 
         if( $this->getParam( "cgid", false ) )
@@ -173,7 +173,7 @@ class ContactController extends IXP_Controller_FrontEnd
             return $data;
 
         $data = $this->setRolesAndGroups( $data, $id );
-        
+
         return $data;
     }
 
@@ -196,6 +196,7 @@ class ContactController extends IXP_Controller_FrontEnd
             $ids[] = $row['id'];
 
         $roles = $this->getD2R( '\\Entities\\Contact' )->getRolesByIds( $ids );
+
         if( $id !== null )
             $groups = $this->getD2R( '\\Entities\\Contact' )->getGroupsByIds( $ids );
 
@@ -764,7 +765,7 @@ class ContactController extends IXP_Controller_FrontEnd
                     if( $form->getValue( "privs" ) == \Entities\User::AUTH_SUPERUSER )
                         $user->setPreference( 'customer-notes.read_upto', time() );
                 }
-                                
+
                 $this->getD2EM()->persist( $user );
                 $this->_feParams->userStatus = "created";
             }
@@ -785,7 +786,7 @@ class ContactController extends IXP_Controller_FrontEnd
                         OSS_Auth_Password::hash( $form->getValue( "password" ), $this->_options['resources']['auth']['oss'] )
                      );
                 }
-                   
+
                 $user->setUsername( $form->getValue( "username" ) );
                 $user->setPrivs( $form->getValue( "privs" ) );
             }
