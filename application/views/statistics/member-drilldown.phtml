@@ -22,7 +22,7 @@
         <div class="page-header">
             <h1>
                 IXP Interface Statistics
-                
+
                 {if $multiIXP}
                     @ {$ixp->getShortname()}
                 {else}
@@ -41,20 +41,27 @@
 
     <div class="span6">
 
-        {if $switchname eq ''}
+        {if $isAggregate}
             <h3>
                 Aggregate Statistics for
-                
+
                 {if $multiIXP}
                     {$ixp->getShortname()}
                 {else}
                     All Peering Ports
                 {/if}
             </h3>
+        {else if $isLAG}
+            <h3>
+                LAG
+                <small>
+                    {$switchname}: {$portname}
+                </small>
+            </h3>
         {else}
             <h3>
                 Port: {$switchname} / {$portname}
-                
+
                 {if $resellerMode and $cust->isReseller()}
                     <br /><small>
                     {if $pi->getSwitchPort()->getType() eq SWITCHPORT::TYPE_PEERING}
@@ -73,9 +80,9 @@
 
     </div>
     <div class="span6">
-    
+
         <form action="{genUrl controller="statistics" action="member-drilldown" ixp=$ixp->getId() shortname=$cust->getShortname() monitorindex=$monitorindex}" method="post" class="form-horizontal">
-            
+
             <strong>Graph Type:&nbsp;&nbsp;&nbsp;</strong>
 
             <select name="category" onchange="this.form.submit();" class="chzn-select span2">
@@ -87,7 +94,7 @@
             <a class="btn btn-primary" href="{genUrl controller="statistics" action="member" ixp=$ixp->getId()}{if $user->getPrivs() eq 3}/shortname/{$cust->getShortname()}{/if}">
                 Statistics Overview
             </a>
-            {if $ixp->getSmokeping() and $switchname neq ''}
+            {if $ixp->getSmokeping() and $isPort neq ''}
                 {$canPing = 0}
                 {foreach $pi->getVirtualInterface()->getVlanInterfaces() as $vli}
                     {if ( $vli->getIpv4enabled() and $vli->getIpv4canping() ) or ( $vli->getIpv6enabled() and $vli->getIpv6canping() )}
@@ -106,7 +113,7 @@
 
     </div>
 </div>
-    
+
 <div class="row-fluid">
 
 {assign var='count' value=0}
@@ -150,4 +157,3 @@
 </div>
 
 {tmplinclude file="footer.phtml"}
-
