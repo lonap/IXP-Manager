@@ -70,13 +70,11 @@ port security policies.</p>
             This also applies to private VLANs provided over the LONAP infrastructure.<br />
 	    <br />
 	    If frames are seen on a port with a source MAC address which differs 
-            from the dynamically learned address, then the switch will either shut the port down
-	    automatically (Cisco) or else drop frames from the unknown MAC address. (Extreme) 
+            from the dynamically learned address, then the switch will drop frames from the unknown MAC address.
 	    LONAP ports on Extreme switches will relearn a new dynamic MAC address every time the link comes up.<br />
         <br />
     	    When multiple MAC addresses are seen on a particular
 	    port, it generally means one of the following things:
-
 	    <ul>
 	       <li> the connected router or switch has been misconfigured to forward link-local frames to
 	            the LONAP peering
@@ -133,8 +131,7 @@ traffic.
 </p>
 
 <p>
-Traffic monitoring is implemented using <code>ixpwatch</code>, a program
-designed and coded by the London Internet Exchange (LINX).
+Traffic monitoring is implemented using <code>ixpwatch</code>.
 </p>
 
 </div>
