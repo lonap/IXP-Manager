@@ -1,0 +1,51 @@
+
+<div class="row-fluid">
+
+    <div class="span6">
+
+        {$nocDetails}
+	{$registrationDetails}
+
+	</div>
+
+	<div class="span6">
+        {if (!isset( $options.reseller.no_billing_for_resold_customers ) || !$options.reseller.no_billing_for_resold_customers ) || !$resellerMode || !$resoldCustomer }
+            {$billingDetails}
+        {/if}
+
+	</div>
+
+	<div class="span6">
+        {assign var='rdetails' value= $cust->getRegistrationDetails() }
+        <legend>Registration Details</legend>
+        <table>
+            <tr>
+                <th>Registered Name</th>
+                <td>{$rdetails->getRegisteredName()}</td>
+            </tr>
+            <tr>
+                <th>Company Number</th>
+                <td>{$rdetails->getCompanyNumber()}</td>
+            </tr>
+            <tr>
+                <th>Jurisdiction</th>
+                <td>{$rdetails->getJurisdiction()}</td>
+            </tr>
+            <tr>
+                <th>Address</th>
+                <td>
+                    {if $rdetails->getAddress1()}{$rdetails->getAddress1()}<br/>{/if}
+                    {if $rdetails->getAddress2()}{$rdetails->getAddress2()}<br/>{/if}
+                    {if $rdetails->getAddress3()}{$rdetails->getAddress3()}<br/>{/if}
+                    {if $rdetails->getTownCity()}{$rdetails->getTownCity()}<br/>{/if}
+                    {if $rdetails->getPostcode()}{$rdetails->getPostcode()}{/if}
+                </td>
+            </tr>
+            <tr>
+                <th>Country</th>
+                <td>{Countries::getCountryName($rdetails->getCountry())}</td>
+            </tr>
+        </table>
+	</div>
+ </div>
+

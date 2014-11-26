@@ -1,0 +1,58 @@
+{tmplinclude file="header.phtml"}
+
+{if $user->getPrivs() eq 3}
+    <ul class="breadcrumb">
+        <li>
+            <a href="{genUrl}">Home</a> <span class="divider">/</span>
+        </li>
+        <li>
+            Documentation <span class="divider">/</span>
+        </li>
+        <li class="active">
+            LONAP RIPE Objects
+        </li>
+    </ul>
+    
+    <div>
+{else}
+    <div class="page-content">
+        <div class="page-header">
+            <h1>LONAP RIPE Objects</h1>
+        </div>
+{/if}
+
+<p>LONAP maintains several RIPE objects to enable discovery of participants on the exchange.<br />
+These are updated periodically in the RIPE DB and are available for use by anyone via whois.ripe.net</p>
+
+<ul>
+
+ <li><b><a href="https://apps.db.ripe.net/search/query.html?searchtext=AS-LONAP-CONNECTED&rflag=true&source=RIPE#resultsAnchor" target="_new">AS-LONAP-CONNECTED</a></b> - All LONAP connected member ASNs </li>
+ <li><b><a href="https://apps.db.ripe.net/search/query.html?searchtext=AS-SET-LONAP-CONNECTED&rflag=true&source=RIPE#resultsAnchor" target="_new">AS-SET-LONAP-CONNECTED</a></b> - All LONAP connected member AS SETs </li>
+ <li><b><a href="https://apps.db.ripe.net/search/query.html?searchtext=AS-LONAP-MLP&rflag=true&source=RIPE#resultsAnchor" target="_new">AS-LONAP-MLP</a></b> - All LONAP IPv4 Route Server Participants (lists primary ASN and AS-SET)</li>
+ <li><b><a href="https://apps.db.ripe.net/search/query.html?searchtext=AS-LONAP-MLP-v6&rflag=true&source=RIPE#resultsAnchor" target="_new">AS-LONAP-MLP-v6</a></b> - All LONAP IPv6 Route Server Participants (lists primary ASN and AS-SET)</li>
+</ul>
+
+<p><b>Notes</b></p>
+
+<ul>
+ <li>If using automated scripts to query the RIPE DB, <b>care should be taken not to generate excessive queries</b> as doing so may result in your IP address
+     or IP range being blocked by RIPE NCC. Always run the whois query <b>non-recursively</b> from a script, and use the -r flag to exclude related objects.</li>
+ <li>If any of your member information is incorrect, please contact us.</li>
+ <li>If you have any other suggestions for objects, or how you would like the information presented, please let us know.</li>
+</ul>
+<ul>
+<p><b>Other LONAP RIPE Objects</b></p>
+ <li><b>AS8330</b> - This is LONAP&apos;s <b>own</b> ASN routing policy. You should <b>not</b> use this object as a source of member or peer lists.</li>
+ <li><b>AS-LONAP</b> - Lists all the ASNs that LONAP itself originates or advertises prefixes for (our own ASN, plus any projects etc that we provide connectivity for.)</li>
+ <li><b>AS8550</b> - This is the LONAP Route Server ASN. It states in the remarks the communities to use for RS policy. AS8550 does not appear itself in any AS Paths.</li>
+</ul>
+
+<p><b>Example</b></p>
+
+<pre>
+$ whois -h whois.ripe.net -- -r AS-LONAP-CONNECTED
+</pre>
+
+</div>
+
+{tmplinclude file="footer.phtml"}
