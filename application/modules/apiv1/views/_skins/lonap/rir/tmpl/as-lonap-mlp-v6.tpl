@@ -12,7 +12,7 @@ remarks:        AS-LONAP-MLP            - IPv4 Route Server Participants
 remarks:        -----------------------------------------------------------------
 {foreach $customers as $c}
 {if $c->isRouteServerClient( 6 )}
-members:        AS{$c->getAutsys()}, {$c->resolveAsMacro( 6, 'AS' )}  # {$c->getName()}
+members:        AS{$c->getAutsys()} # {$c->getName()}
 {/if}
 {/foreach}
 remarks:        -----------------------------------------------------------------
