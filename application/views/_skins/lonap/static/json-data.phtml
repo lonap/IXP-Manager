@@ -1,0 +1,62 @@
+{tmplinclude file="header.phtml"}
+
+{if $user->getPrivs() eq 3}
+    <ul class="breadcrumb">
+        <li>
+            <a href="{genUrl}">Home</a> <span class="divider">/</span>
+        </li>
+        <li>
+            Documentation <span class="divider">/</span>
+        </li>
+        <li class="active">
+            LONAP JSON member list API
+        </li>
+    </ul>
+    
+    <div>
+{else}
+    <div class="page-content">
+        <div class="page-header">
+            <h1>LONAP JSON member list API</h1>
+        </div>
+{/if}
+
+<p>LONAP Members can export member data in a Euro-IX BCP standardised JSON format. This data is exported using an authenticated REST API.<br />
+This BCP is to make the member at Internet Exchanges available in standardised formats, accessible via common APIs, rather than every IXP having their own formats<br />
+for example CSV, TSV, XML and other formats.
+</p>
+
+<h2>1. Set up an API Key</h2>
+
+<ul><li>If you have not created an API Key, create one by going to <b><a href="https://portal.lonap.net/api-key">My Account - API Keys</a></b> and then click <b>Add one</b></li>
+    <li>This will create an authentication key such as dvNzIkRm0GSW3TNhO7V4UA26cX8mdJey9KbP4xAgRTiSAqQx</li>
+    <li><b>Note: this feature only works with user accounts, not admin accounts.</b></li>
+</ul>
+
+<h2>2. Example code</h2>
+
+<a href="https://github.com/euro-ix/">https://github.com/euro-ix/</a> - php / python examples (tbc)
+
+<h2>3. Accessing the data</h2>
+
+Access the URL in the form: https://portal.lonap.net/apiv1/member-list/list/key/&lt;your_key_here&gt; <br /><br />
+
+<p><b>Example</b></p>
+
+The above URL will be embedded in your code. As a quick test that it is working, fetch the URL. (obviously you 
+will need to substitute your own key here.) <br />
+
+<pre>
+wget -O - https://portal.lonap.net/apiv1/member-list/list/key/dvNzIkRm0GSW3TNhO7V4UA26cX8mdJey9KbP4xAgRTiSAqQx
+</pre>
+
+<h2>4. Further details</h2>
+
+<ul>
+ <li><a href="https://ripe69.ripe.net/presentations/94-1411-ej-ixp-json-api.pdf">IXP Member List API - RIPE69 Presentation by Elisa Jasinska and Nick Hilliard</a></li>
+ <li><a href="https://www.euro-ix.net/documents/1453-ixp-member-list-json-schema-v0-3-txt?download=yes">EURO-IX BCP data export schema</a></li>
+</ul>
+
+</div>
+
+{tmplinclude file="footer.phtml"}
