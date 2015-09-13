@@ -45,7 +45,5 @@ tech-c:         AS8330-RIPE
 mnt-by:         AS8330-MNT
 mnt-by:         AS8330-AUTO-MNT
 mnt-by:         RIPE-NCC-END-MNT
-changed:        hostmaster@ripe.net 20100929
-changed:        hostmaster@ripe.net 20120530
-changed:        ripedb@lonap.net
+status:         ASSIGNED
 source:         RIPE

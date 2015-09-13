@@ -21,5 +21,4 @@ tech-c:         AS8330-RIPE
 admin-c:        AS8330-RIPE
 mnt-by:         AS8330-MNT
 mnt-by:         AS8330-AUTO-MNT
-changed:        ripedb@lonap.net
 source:         RIPE
